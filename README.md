@@ -10,7 +10,7 @@ The HackerTube logo sits above the left menu and opens Home when selected. The m
 
 | Screen | Controls |
 | --- | --- |
-| Browse | Arrows move the highlighted selection; Left from any main tile returns focus to the selected orange menu item (or Home when the route has no selected section). OK opens the selection. With scrolling off, Previous and Next replace the six-card page and keep focus on the pressed button, including at page limits. With scrolling on, moving focus scrolls the list and loads more videos near the end. Back returns to the previous view. |
+| Browse | Arrows move the highlighted selection. With scrolling off, Right from the video grid's right edge opens the next page, and Left from its left edge opens the previous page. Focus lands on the opposite edge in the matching row. Left from page one's left edge returns to the selected orange menu item, or Home when the route has no selected section. Previous and Next remain available and keep focus when pressed. With scrolling on, moving focus scrolls the list and loads more videos near the end. OK opens the selection, and Back returns to the previous view. |
 | Details, filters, topics | With scrolling off, use Previous and Next. With scrolling on, use Up/Down to read text or move through lists. Back closes the panel. |
 | Settings | Select Scrolling to switch On or Off. Select Video text size to cycle Small, Medium, and Large. Both preferences survive app restarts. |
 | Search | Select Search near the bottom of the left menu. The hidden field appears and opens the TV keyboard. Submit with the keyboard or Go; Back hides the field. |
@@ -39,7 +39,7 @@ This interrupts the current TV app. Use it when the Streamer is available for te
 
 The script uses the isolated ADB server on port 5038 and verifies the exact `Google TV Streamer` model before installation. Override `STREAMER_ENDPOINT` if its address changes. The default is `192.168.1.50:5555`.
 
-Package: `ch.cri.hackertube`, version `0.3.9` (code 12). This is a development APK signed with the local Android debug key, not a Play Store release. WebView debugging is available only in debug builds.
+Package: `ch.cri.hackertube`, version `0.3.10` (code 13). This is a development APK signed with the local Android debug key, not a Play Store release. WebView debugging is available only in debug builds.
 
 ## Implementation
 

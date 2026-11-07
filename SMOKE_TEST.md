@@ -136,3 +136,12 @@ Remote events were submitted through serial-pinned ADB on the physical device. H
 - Remote OK paused at 30.472 seconds and resumed playback. Right advanced to 40.472 seconds, and Left returned to 30.472 seconds.
 - Remote Back returned to the same HackerTube watch page in `MainActivity`, with Play fullscreen focused.
 - Offline build, Android lint, JavaScript syntax check, and all four focused tests passed. Installed APK matched SHA-256 `d4ffe4a1926e43bd2357cb50395ff576e1dd0583bd5bed21f9695d7f31b55580`.
+
+
+# Video-grid edge paging, version 0.3.10, 2026-11-07
+
+- With Scrolling Off on the physical Google TV Streamer, remote Right from the top-row right edge changed page 1 to page 2 and focused the top-row first tile. Left returned to page 1 and focused its top-row right edge.
+- The same test on the bottom row moved focus from index 5 to index 3 on the next page, then back to index 5 on the previous page.
+- At the first loaded-batch boundary, one remote Right press loaded 36 more videos, changed page 6 to page 7, and focused the first tile. Left returned to the right edge of page 6.
+- Within page 1, Left moved normally between adjacent thumbnails. Crossing its left edge focused the selected Home menu item. Root and content scroll offsets remained zero.
+- Offline build, Android lint, JavaScript syntax check, and all four focused tests passed. Installed APK matched SHA-256 `f0e121fa484d2ae68f5dff58440cd92e67af83dff361657c78c2c7e02c5ee8ee`.

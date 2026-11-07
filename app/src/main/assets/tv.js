@@ -3,6 +3,7 @@
   if (window.HackerTubeTV || location.origin !== 'https://hackertube.org') return;
   const source = document.querySelector('main');
   const pageSize = 6;
+  const gridColumns = 3;
   const scrollSettingKey = 'cri.hackertube.scrollEnabled';
   const textSizeKey = 'cri.hackertube.textSize';
   const textSizes = ['small', 'medium', 'large'];
@@ -401,7 +402,7 @@
     // Explicit remote navigation still reveals its destination through focus's default behavior.
     focus(matching || (scrollEnabled && q('#tv-reading')) || q('.tv-card') || (q('#tv-next').getAttribute('aria-disabled') !== 'true' ? q('#tv-next') : q('#tv-tools button')), !matching);
   }
-  async function changePage(delta) {
+  async function changePage(delta, cardRow = null) {
     const trigger = q(delta > 0 ? '#tv-next' : '#tv-prev');
     if (trigger.getAttribute('aria-disabled') === 'true') return;
     // Keep repeated remote OK presses on the same pager for cards and text alike.
@@ -420,7 +421,15 @@
       if (loader.error) { render(); focus(q('#tv-next')); return; }
     }
     setPage(Math.max(0,next)); render();
-    focus(trigger);
+    if (cardRow === null) {
+      focus(trigger);
+      return;
+    }
+    // Edge navigation lands on the opposite edge in the matching row. If the
+    // last page is short, use its first available card instead of the pager.
+    const cards = [...q('#tv-body').querySelectorAll('.tv-card')];
+    const targetIndex = cardRow * gridColumns + (delta > 0 ? 0 : gridColumns - 1);
+    focus(cards[targetIndex] || (delta > 0 ? cards[0] : cards.at(-1)));
   }
   q('#tv-prev').onclick = () => {
     if (q('#tv-prev').getAttribute('aria-disabled') === 'true') return;
@@ -466,12 +475,28 @@
     event.preventDefault(); event.stopImmediatePropagation();
     if (key === 'Escape') { back(); return; }
     editing = false;
-    // Left from every main tile returns to the selected section, regardless of column.
-    // Moving focus must not activate the menu item or reset the content's scroll position.
-    // Routes without a selected section use Home as a predictable sidebar entry point.
-    if (key === 'ArrowLeft' && active.matches('.tv-card')) {
-      focus(q('#tv-nav [aria-current="page"]') || q('#tv-nav button'));
-      return;
+    if (!scrollEnabled && active.matches('.tv-card:not(.tv-text)') && (key === 'ArrowLeft' || key === 'ArrowRight')) {
+      const cards = [...q('#tv-body').querySelectorAll('.tv-card')];
+      const cardIndex = cards.indexOf(active);
+      const column = cardIndex % gridColumns;
+      const row = Math.floor(cardIndex / gridColumns);
+      const atLeftEdge = column === 0;
+      const atRightEdge = column === gridColumns - 1 || cardIndex === cards.length - 1;
+      if (key === 'ArrowRight' && atRightEdge) {
+        // Crossing the right edge replaces the page and keeps the same visual row.
+        if (q('#tv-next').getAttribute('aria-disabled') !== 'true') changePage(1, row);
+        return;
+      }
+      if (key === 'ArrowLeft' && atLeftEdge) {
+        if (q('#tv-prev').getAttribute('aria-disabled') !== 'true') {
+          // A previous page exists, so its right edge is the natural destination.
+          changePage(-1, row);
+        } else {
+          // Page one still provides the established route from content to the menu.
+          focus(q('#tv-nav [aria-current="page"]') || q('#tv-nav button'));
+        }
+        return;
+      }
     }
     if (scrollEnabled && (active.id === 'tv-reading' || key === 'PageDown' || key === 'PageUp')) {
       if (['ArrowUp','ArrowDown','PageDown','PageUp'].includes(key)) {
