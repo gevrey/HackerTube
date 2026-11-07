@@ -1,15 +1,17 @@
 # HackerTube for Google TV Streamer
 
-A small Android TV wrapper around https://hackertube.org. Browse the live site in fixed screens with a D-pad, search, open a video, and play it in an app-owned fullscreen YouTube player. Settings contains a persistent **Scrolling: On / Off** toggle. Off is the default: lists show six cards per page and long text is split into measured pages. On uses continuous lists and scrollable text while keeping navigation and search fixed. This MVP targets the Google TV Streamer only.
+A small Android TV wrapper around https://hackertube.org. Browse the live site in fixed screens with a D-pad, search, open a video, and play it in an app-owned fullscreen YouTube player. Settings contains a persistent **Scrolling: On / Off** toggle. Off is the default: lists show six cards per page and long text is split into measured pages. On uses continuous lists and scrollable text while keeping navigation and the menu fixed. This MVP targets the Google TV Streamer only.
 
 ## Remote controls
+
+The left menu ends with About, Search, Filters, and Settings. Search remains hidden until selected, and Home uses the freed space for larger video cards.
 
 | Screen | Controls |
 | --- | --- |
 | Browse | Arrows move the highlighted selection; OK opens it. With scrolling off, Previous and Next replace the six-card page and keep focus on the pressed button, including at page limits. With scrolling on, moving focus scrolls the list and loads more videos near the end. Back returns to the previous view. |
 | Details, filters, topics | With scrolling off, use Previous and Next. With scrolling on, use Up/Down to read text or move through lists. Back closes the panel. |
 | Settings | Select Scrolling to switch On or Off. The preference survives app restarts. |
-| Search | Select the search field and press OK to use the TV keyboard. Submit with the keyboard or the search button. |
+| Search | Select Search near the bottom of the left menu. The hidden field appears and opens the TV keyboard. Submit with the keyboard or Go; Back hides the field. |
 | Watch page | Select the poster or Play fullscreen to start. Open in YouTube is available as a fallback. |
 | Player | OK toggles play/pause; Left/Right seek 10 seconds; Down focuses the action buttons; Up returns to the player; Back returns to the watch page. |
 
@@ -35,7 +37,7 @@ This interrupts the current TV app. Use it when the Streamer is available for te
 
 The script uses the isolated ADB server on port 5038 and verifies the exact `Google TV Streamer` model before installation. Override `STREAMER_ENDPOINT` if its address changes. The default is `192.168.1.50:5555`.
 
-Package: `ch.cri.hackertube`, version `0.3.1` (code 4). This is a development APK signed with the local Android debug key, not a Play Store release. WebView debugging is available only in debug builds.
+Package: `ch.cri.hackertube`, version `0.3.2` (code 5). This is a development APK signed with the local Android debug key, not a Play Store release. WebView debugging is available only in debug builds.
 
 ## Implementation
 

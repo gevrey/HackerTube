@@ -9,7 +9,8 @@
   try { scrollEnabled = localStorage.getItem(scrollSettingKey) === 'true'; } catch (_) {}
   const savedPages = new Map();
   let path = location.pathname + location.search, page = 0, panels = [];
-  let scheduled = false, editing = false, batchLoader = null, loadingNext = false, pendingContentFocus = true;
+  let scheduled = false, editing = false, searchOpen = false, pendingFilters = false;
+  let batchLoader = null, loadingNext = false, pendingContentFocus = true;
   const directions = { ArrowLeft:'left', ArrowRight:'right', ArrowUp:'up', ArrowDown:'down' };
 
   // Keep the site's router, storage, and event handlers alive as a data source. Its DOM is
@@ -20,7 +21,7 @@
     html,body { width:100%; height:100%; margin:0!important; overflow:hidden!important; overscroll-behavior:none; }
     body > :not(#tv-shell):not(script):not(style) { position:fixed!important; top:100000px!important;
       left:0!important; width:960px!important; visibility:hidden!important; pointer-events:none!important; }
-    #tv-shell { position:fixed; inset:18px 26px; display:grid; grid-template-rows:52px minmax(0,1fr) 18px;
+    #tv-shell { position:fixed; inset:18px 26px; display:grid; grid-template-rows:minmax(0,1fr) 18px;
       gap:12px; color:#f4f6fb; background:#10141c; font:18px/1.3 sans-serif; }
     body { background:#10141c!important; }
     #tv-shell * { box-sizing:border-box; min-width:0; min-height:0; }
@@ -31,20 +32,19 @@
     #tv-shell button[aria-disabled=true].tv-focus { opacity:1; color:#9aaec5; }
     #tv-shell .tv-focus { border-color:#ffad6c!important; outline:2px solid #ffad6c!important;
       outline-offset:1px; background-color:#34465e; }
-    #tv-top { display:flex; align-items:center; gap:20px; }
-    #tv-brand { flex:none; font-size:26px!important; font-weight:700!important; background:transparent!important; }
-    #tv-brand span { color:#ff8d42; }
-    #tv-search { display:flex; flex:1; gap:10px; height:44px; }
-    #tv-query { flex:1; border:2px solid #526176; border-radius:8px; padding:6px 14px; background:#18202c; }
     #tv-main { display:grid; grid-template-columns:150px minmax(0,1fr); gap:22px; overflow:hidden; }
-    #tv-nav { display:grid; grid-template-rows:repeat(8,minmax(0,1fr)); gap:7px; padding:3px; }
-    #tv-nav button { text-align:left; padding:6px 10px; font-size:17px; }
+    #tv-nav { display:grid; grid-template-rows:repeat(11,minmax(0,1fr)); gap:5px; padding:3px; }
+    #tv-nav button { text-align:left; padding:4px 10px; font-size:16px; }
     #tv-nav button[aria-current=page] { color:#ffad6c; }
-    #tv-content { display:grid; grid-template-rows:30px 36px minmax(0,1fr) 38px; gap:10px; padding:3px; overflow:hidden; }
-    #tv-title { margin:0; font-size:22px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    #tv-tools { display:flex; gap:10px; }
+    #tv-content { display:flex; flex-direction:column; gap:10px; padding:3px; overflow:hidden; }
+    #tv-search { display:none; flex:none; gap:10px; height:44px; }
+    #tv-shell.tv-search-open #tv-search { display:flex; }
+    #tv-query { flex:1; border:2px solid #526176; border-radius:8px; padding:6px 14px; background:#18202c; }
+    #tv-title { flex:none; margin:0; height:30px; font-size:22px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    #tv-tools { flex:none; height:36px; gap:10px; }
     #tv-tools button { font-size:16px; padding:4px 12px; }
-    #tv-body { overflow:hidden; }
+    #tv-body { flex:1; min-height:0; overflow:hidden; }
+    #tv-pager { flex:none; height:38px; }
     .tv-cards { height:100%; display:grid; grid-template-columns:repeat(3,minmax(0,1fr));
       grid-template-rows:repeat(2,minmax(0,1fr)); gap:14px; padding:3px; }
     #tv-shell .tv-card { display:grid; grid-template-rows:minmax(0,1fr) auto auto; gap:4px; padding:7px; text-align:left; }
@@ -65,9 +65,10 @@
     #tv-shell.tv-scroll .tv-cards { height:auto; grid-template-rows:none; grid-auto-rows:200px; }
     #tv-shell.tv-scroll #tv-reading { height:auto; min-height:100%; overflow:visible; }
     #tv-empty { display:flex; height:100%; align-items:center; justify-content:center; text-align:center; padding:20px; }
-    @media(max-height:440px) { #tv-shell { inset:10px 18px; gap:8px; grid-template-rows:42px minmax(0,1fr) 16px; }
-      #tv-content { grid-template-rows:24px 30px minmax(0,1fr) 32px; gap:6px; }
-      #tv-nav { gap:4px; } #tv-nav button { font-size:14px; padding:3px 8px; }
+    @media(max-height:440px) { #tv-shell { inset:10px 18px; gap:8px; grid-template-rows:minmax(0,1fr) 16px; }
+      #tv-content { gap:6px; } #tv-title { height:24px; } #tv-tools { height:30px; }
+      #tv-search { height:38px; } #tv-pager { height:32px; }
+      #tv-nav { gap:3px; } #tv-nav button { font-size:14px; padding:3px 8px; }
       #tv-reading { font-size:16px; line-height:1.35; } .tv-cards { gap:9px; }
       .tv-card strong { font-size:14px; line-height:17px; } .tv-card small { font-size:11px; }
       #tv-pager button { height:30px; } }
@@ -75,10 +76,9 @@
   document.head.appendChild(style);
   const shell = document.createElement('div');
   shell.id = 'tv-shell';
-  shell.innerHTML = `<header id="tv-top"><button id="tv-brand" data-key="home">Hacker<span>Tube</span></button>
-    <form id="tv-search"><input id="tv-query" type="search" aria-label="Search videos" placeholder="Search videos" autocomplete="off" data-key="query">
-      <button data-key="search">Search</button></form></header>
-    <div id="tv-main"><nav id="tv-nav" aria-label="Sections"></nav><section id="tv-content">
+  shell.innerHTML = `<div id="tv-main"><nav id="tv-nav" aria-label="Sections"></nav><section id="tv-content">
+      <form id="tv-search"><input id="tv-query" type="search" aria-label="Search videos" placeholder="Search videos" autocomplete="off" data-key="query">
+        <button data-key="search-submit">Go</button></form>
       <h1 id="tv-title"></h1><div id="tv-tools"></div><div id="tv-body"></div>
       <div id="tv-pager"><button id="tv-prev" data-key="previous">Previous</button><span id="tv-page-label" aria-live="polite"></span>
       <button id="tv-next" data-key="next">Next</button></div></section></div>
@@ -90,17 +90,45 @@
     const node = document.createElement('button'); node.type = 'button'; node.textContent = label;
     node.dataset.key = key; node.onclick = action; return node;
   };
-  function go(url) { savedPages.set(path, page); navigate(url); }
-  q('#tv-brand').onclick = () => go('/');
+  function setSearchOpen(open) {
+    searchOpen = open; shell.classList.toggle('tv-search-open', open);
+    q('[data-key="search-toggle"]').setAttribute('aria-expanded', String(open));
+    if (!open) { editing = false; q('#tv-query').blur(); }
+  }
+  function go(url) {
+    pendingFilters = false; setSearchOpen(false); savedPages.set(path, page); navigate(url);
+  }
+  function openSearch() {
+    // The field only takes vertical space when Search is selected from the menu.
+    setSearchOpen(true); focus(q('#tv-query'));
+    q('#tv-query').click();
+  }
+  function openFilters() {
+    setSearchOpen(false);
+    if (source.querySelector('.filters')) { filters(); return; }
+    // Filters live on Home. Wait for its route to render before opening the panel.
+    go('/'); pendingFilters = true; schedule();
+  }
   q('#tv-search').onsubmit = event => {
-    event.preventDefault(); editing = false; q('#tv-query').blur();
+    event.preventDefault();
     const query = q('#tv-query').value.trim();
     go(query ? '/search/' + encodeURIComponent(query) : '/');
   };
-  document.querySelectorAll('.side a').forEach((link, index) => {
+  const links = [...document.querySelectorAll('.side a')];
+  links.filter(link => link.getAttribute('href') !== '/settings').forEach((link, index) => {
     const node = button(text(link), 'nav-' + index, () => go(link.getAttribute('href')));
     node.dataset.path = link.getAttribute('href'); q('#tv-nav').appendChild(node);
   });
+  const about = button('About', 'about', () => go('/about'));
+  about.dataset.path = '/about'; q('#tv-nav').appendChild(about);
+  const search = button('Search', 'search-toggle', openSearch);
+  search.setAttribute('aria-expanded', 'false'); q('#tv-nav').appendChild(search);
+  q('#tv-nav').appendChild(button('Filters', 'filters', openFilters));
+  const settings = links.find(link => link.getAttribute('href') === '/settings');
+  if (settings) {
+    const node = button('Settings', 'nav-settings', () => go('/settings'));
+    node.dataset.path = '/settings'; q('#tv-nav').appendChild(node);
+  }
 
   // Replace implicit infinite scrolling with an explicit next-batch loader. It uses the
   // site's own API callback and card renderer, preserving preferences and filter semantics.
@@ -202,7 +230,6 @@
     if (actions.length) tools.push(['Actions', () => showPanel({ title:'List actions', items:actions.map(node => ({
       title:text(node), key:node.id || node.getAttribute('href'), action:() => sourceAction(node)
     })) })]);
-    if (source.querySelector('.filters')) tools.push(['Filters', filters]);
     if (source.querySelector('.catwrap a')) tools.push(['Topics', () => showPanel({ title:'Topics', items:[...source.querySelectorAll('.catwrap a')].map(n => linkItem(n)) })]);
     if (source.querySelector('.plinfo')) tools.push(['Introduction', readSource]);
     if (cards.length || activeLoader()) return { title:document.title.replace(/ - HackerTube$/, ''), items:cards.map(n => linkItem(n)), tools };
@@ -255,15 +282,20 @@
     const active = document.activeElement;
     const key = active?.dataset.key;
     const persistentFocus = active && !q('#tv-content').contains(active) && shell.contains(active);
+    // A requested Filters panel opens after Home finishes rendering its source DOM.
+    if (pendingFilters && path === '/' && document.title === 'HackerTube' && source.querySelector('.filters')) {
+      pendingFilters = false; filters(); return;
+    }
     const panel = panels.at(-1), data = panel || model();
     q('#tv-title').textContent = data.title;
+    q('#tv-title').style.display = !panel && data.title === 'HackerTube' ? 'none' : '';
     q('#tv-nav').querySelectorAll('button').forEach(el => {
       if (el.dataset.path === path) el.setAttribute('aria-current','page'); else el.removeAttribute('aria-current');
     });
     q('#tv-tools').replaceChildren();
     if (panel) q('#tv-tools').appendChild(button('Back', 'panel-back', back));
-    else q('#tv-tools').appendChild(button('About', 'about', () => go('/about')));
     for (const [label, action] of data.tools || []) q('#tv-tools').appendChild(button(label, 'tool-' + label, action));
+    q('#tv-tools').style.display = q('#tv-tools').children.length ? 'flex' : 'none';
     const loader = !panel ? activeLoader() : null;
     let count, index;
     if (panel?.text !== undefined) {
@@ -378,7 +410,7 @@
   // Capture keys before the website's handlers. Only our own content pane can scroll,
   // and only while the user has enabled scrolling in Settings.
   document.addEventListener('keydown', event => {
-    if (!shell.contains(document.activeElement)) focus(q('.tv-card') || q('#tv-query'));
+    if (!shell.contains(document.activeElement)) focus(q('.tv-card') || q('#tv-nav button'));
     const active = document.activeElement, key = event.key;
     pendingContentFocus = false;
     if (active === q('#tv-query') && editing && key !== 'ArrowDown' && key !== 'Escape') {
@@ -407,8 +439,9 @@
     if (index >= 0) focus(others[index]);
   },true);
   function back() {
+    if (searchOpen) { setSearchOpen(false); focus(q('[data-key="search-toggle"]')); return true; }
     if (panels.length) { panels.pop(); render(true); return true; }
-    if (editing) { editing = false; q('#tv-query').blur(); focus(q('.tv-card') || q('#tv-brand')); return true; }
+    if (editing) { editing = false; q('#tv-query').blur(); focus(q('.tv-card') || q('#tv-nav button')); return true; }
     return false;
   }
   window.HackerTubeTV = { media, back, refresh:render,

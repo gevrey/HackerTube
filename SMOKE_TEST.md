@@ -69,3 +69,13 @@ Remote events were submitted through serial-pinned ADB on the physical device. H
 - A nine-page details panel retained Next after advancing and Previous when returning to its first page. Root scroll offset remained zero.
 - The user's pre-test Scrolling On preference was restored after verification.
 - Offline build, Android lint, JavaScript syntax checks, and all four focused tests passed. Installed APK matches the local SHA-256: `06476b284358bf9852a61b49b3ad41948fea0494653a4161564b0a23afb01532`.
+
+
+# Compact navigation, version 0.3.2, 2026-11-07
+
+- Removed the extra top brand row and redundant Home title. The live Home cards gained height: the content pane measured 420 CSS pixels in paged mode, compared with 270 before this update.
+- The left menu fits all 11 buttons inside the 540-pixel viewport, with About, Search, Filters, and Settings at the bottom in that order. Root scroll height remained 540 pixels.
+- Remote OK on Search revealed and focused the field and opened the Google TV keyboard. Search for `linux` returned 30 results and hid the field. Back closed the revealed field and returned focus to Search.
+- About opened its page. Filters opened 26 options from Settings, returning through Home when necessary.
+- With scrolling Off, the pane and content both measured 420 pixels, six cards were visible, and root and pane scroll offsets were zero. The user's Scrolling On preference was restored after testing.
+- Final offline build, lint, JavaScript syntax check, and four focused tests passed. The installed APK matched the local SHA-256: `6b2c6a4b015e3a47217657c9451c115edeed640c4cacbad244c64038f1f2a12c`.
