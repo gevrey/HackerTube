@@ -466,6 +466,13 @@
     event.preventDefault(); event.stopImmediatePropagation();
     if (key === 'Escape') { back(); return; }
     editing = false;
+    // Left from every main tile returns to the selected section, regardless of column.
+    // Moving focus must not activate the menu item or reset the content's scroll position.
+    // Routes without a selected section use Home as a predictable sidebar entry point.
+    if (key === 'ArrowLeft' && active.matches('.tv-card')) {
+      focus(q('#tv-nav [aria-current="page"]') || q('#tv-nav button'));
+      return;
+    }
     if (scrollEnabled && (active.id === 'tv-reading' || key === 'PageDown' || key === 'PageUp')) {
       if (['ArrowUp','ArrowDown','PageDown','PageUp'].includes(key)) {
         const pane = q('#tv-body'), delta = key === 'ArrowUp' || key === 'PageUp' ? -1 : 1;

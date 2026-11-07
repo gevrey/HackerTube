@@ -119,3 +119,11 @@ Remote events were submitted through serial-pinned ADB on the physical device. H
 - The bottom instructions element and its reserved layout row were removed. Home's video pane measured 450 CSS pixels, up from 420, with a 540-pixel root and zero root scroll.
 - The final Home layout was visually checked on the physical Streamer. Offline build, lint, syntax check, and four focused tests passed.
 - Installed APK matched SHA-256 `76767a9282047f6617383021fff63d71ac014b27d17ec837ab0135ed657fb9ca`.
+
+
+# Left returns to selected menu, version 0.3.8, 2026-11-07
+
+- Physical Google TV Streamer remote Left events from Home tiles 1, 2, 3, and 6 focused the selected Home menu button. Left from each of the first two Settings tiles focused Settings. All 12 checks passed across Scrolling Off and On.
+- The current route, content scroll offset, and zero root scroll stayed unchanged when focus returned to the menu. Routes without a selected menu section use Home as a fallback.
+- The current Scrolling Off preference was restored after testing. The app was left on Home.
+- Offline build, Android lint, JavaScript syntax check, and all four focused tests passed. Installed APK matched SHA-256 `8d0e3447eb1bd5ea5cb523391d83e6848561028e18a89ef796bfd5a5d7c8e999`.
