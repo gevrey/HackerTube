@@ -27,7 +27,8 @@
     #tv-shell button,#tv-shell input { font:inherit; color:inherit; }
     #tv-shell button { border:2px solid transparent; background:#263346; border-radius:8px;
       padding:7px 13px; cursor:pointer; overflow:hidden; }
-    #tv-shell button:disabled { opacity:.35; }
+    #tv-shell button:disabled,#tv-shell button[aria-disabled=true] { opacity:.35; }
+    #tv-shell button[aria-disabled=true].tv-focus { opacity:1; color:#9aaec5; }
     #tv-shell .tv-focus { border-color:#ffad6c!important; outline:2px solid #ffad6c!important;
       outline-offset:1px; background-color:#34465e; }
     #tv-top { display:flex; align-items:center; gap:20px; }
@@ -307,8 +308,10 @@
     q('#tv-prev').style.display = '';
     q('#tv-next').style.display = '';
     q('#tv-prev').textContent = scrollEnabled ? 'Top' : 'Previous';
-    q('#tv-prev').disabled = !scrollEnabled && index === 0;
-    q('#tv-next').disabled = loadingNext || !!loader?.busy || (index + 1 >= count && (!loader || loader.done));
+    // ARIA keeps the pager focusable at boundaries and during loading. Native disabled
+    // buttons lose focus, so click/key handlers below enforce the unavailable state instead.
+    q('#tv-prev').setAttribute('aria-disabled', String(loadingNext || (!scrollEnabled && index === 0)));
+    q('#tv-next').setAttribute('aria-disabled', String(loadingNext || !!loader?.busy || (index + 1 >= count && (!loader || loader.done))));
     q('#tv-page-label').textContent = 'Page ' + (index + 1) + ' / ' + count + (loader && !loader.done ? '+' : '');
     q('#tv-next').textContent = loadingNext || loader?.busy ? 'Loading…' : loader?.error ? 'Retry' : 'Next';
     if (scrollEnabled) {
@@ -321,9 +324,15 @@
     const matching = !resetFocus && visibleTargets().find(el => el.dataset.key === key);
     // Background batch updates must preserve the viewport, even if the last focused card is offscreen.
     // Explicit remote navigation still reveals its destination through focus's default behavior.
-    focus(matching || (scrollEnabled && q('#tv-reading')) || q('.tv-card') || (!q('#tv-next').disabled ? q('#tv-next') : q('#tv-tools button')), !matching);
+    focus(matching || (scrollEnabled && q('#tv-reading')) || q('.tv-card') || (q('#tv-next').getAttribute('aria-disabled') !== 'true' ? q('#tv-next') : q('#tv-tools button')), !matching);
   }
   async function changePage(delta) {
+    const trigger = q(delta > 0 ? '#tv-next' : '#tv-prev');
+    if (trigger.getAttribute('aria-disabled') === 'true') return;
+    // Keep repeated remote OK presses on the same pager for cards and text alike.
+    // This also preserves focus while the next batch is being fetched.
+    pendingContentFocus = false;
+    focus(trigger);
     const panel = panels.at(-1), data = panel || model();
     const next = pageState().page + delta;
     const loader = !panel ? activeLoader() : null;
@@ -335,14 +344,16 @@
       if (path !== originalPath) return;
       if (loader.error) { render(); focus(q('#tv-next')); return; }
     }
-    setPage(Math.max(0,next)); render(true);
-    if (panels.at(-1)?.text !== undefined) focus(delta > 0 && !q('#tv-next').disabled ? q('#tv-next') : q('#tv-prev'));
+    setPage(Math.max(0,next)); render();
+    focus(trigger);
   }
   q('#tv-prev').onclick = () => {
+    if (q('#tv-prev').getAttribute('aria-disabled') === 'true') return;
     if (!scrollEnabled) return changePage(-1);
     q('#tv-body').scrollTop = 0; focus(q('.tv-card') || q('#tv-reading'));
   };
   q('#tv-next').onclick = () => {
+    if (q('#tv-next').getAttribute('aria-disabled') === 'true') return;
     if (!scrollEnabled) return changePage(1);
     activeLoader()?.more();
   };

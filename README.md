@@ -6,7 +6,7 @@ A small Android TV wrapper around https://hackertube.org. Browse the live site i
 
 | Screen | Controls |
 | --- | --- |
-| Browse | Arrows move the highlighted selection; OK opens it. With scrolling off, Previous and Next replace the six-card page. With scrolling on, moving focus scrolls the list and loads more videos near the end. Back returns to the previous view. |
+| Browse | Arrows move the highlighted selection; OK opens it. With scrolling off, Previous and Next replace the six-card page and keep focus on the pressed button, including at page limits. With scrolling on, moving focus scrolls the list and loads more videos near the end. Back returns to the previous view. |
 | Details, filters, topics | With scrolling off, use Previous and Next. With scrolling on, use Up/Down to read text or move through lists. Back closes the panel. |
 | Settings | Select Scrolling to switch On or Off. The preference survives app restarts. |
 | Search | Select the search field and press OK to use the TV keyboard. Submit with the keyboard or the search button. |
@@ -35,7 +35,7 @@ This interrupts the current TV app. Use it when the Streamer is available for te
 
 The script uses the isolated ADB server on port 5038 and verifies the exact `Google TV Streamer` model before installation. Override `STREAMER_ENDPOINT` if its address changes. The default is `192.168.1.50:5555`.
 
-Package: `ch.cri.hackertube`, version `0.3.0` (code 3). This is a development APK signed with the local Android debug key, not a Play Store release. WebView debugging is available only in debug builds.
+Package: `ch.cri.hackertube`, version `0.3.1` (code 4). This is a development APK signed with the local Android debug key, not a Play Store release. WebView debugging is available only in debug builds.
 
 ## Implementation
 

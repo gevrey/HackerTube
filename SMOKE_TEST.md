@@ -58,3 +58,14 @@ Remote events were submitted through serial-pinned ADB on the physical device. H
 - The final cold launch retained Off, showed six cards, and was visually checked from a physical-device screenshot.
 - The final offline build, lint, JavaScript syntax checks, and four focused tests passed.
 - The installed APK SHA-256 matches the local build: `6f9078aadfcbd1e7bd36651223228b95aaba72a6168b77476c702b140a2c3ac0`.
+
+
+# Paging focus, version 0.3.1, 2026-11-07
+
+- Next and Previous retain focus after replacing cards or text. The pager uses guarded ARIA disabled states so reaching a page limit or loading videos does not remove focus.
+- Seven consecutive remote OK presses on Next reached Home page 8 and loaded 72 videos. Focus remained on Next, including throughout the asynchronous request.
+- Seven remote Previous presses returned to page 1, with focus on Previous. Another OK kept the same page and focus.
+- Playlists reached page 5 of 5 with Next still focused. Another OK did not advance past the final page.
+- A nine-page details panel retained Next after advancing and Previous when returning to its first page. Root scroll offset remained zero.
+- The user's pre-test Scrolling On preference was restored after verification.
+- Offline build, Android lint, JavaScript syntax checks, and all four focused tests passed. Installed APK matches the local SHA-256: `06476b284358bf9852a61b49b3ad41948fea0494653a4161564b0a23afb01532`.
