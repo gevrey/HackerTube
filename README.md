@@ -15,7 +15,7 @@ The HackerTube logo sits above the left menu and opens Home when selected. The m
 | Settings | Select Scrolling to switch On or Off. Select Video text size to cycle Small, Medium, and Large. Both preferences survive app restarts. |
 | Search | Select Search near the bottom of the left menu. The hidden field appears and opens the TV keyboard. Submit with the keyboard or Go; Back hides the field. |
 | Watch page | Select the poster or Play fullscreen to start. Open in YouTube is available as a fallback. |
-| Player | OK toggles play/pause; Left/Right seek 10 seconds; Down focuses the action buttons; Up returns to the player; Back returns to the watch page. |
+| Player | The video fills the screen with no app buttons or instructions. OK toggles play/pause, Left/Right seek 10 seconds, and Back returns to the watch page. |
 
 ## Build
 
@@ -39,7 +39,7 @@ This interrupts the current TV app. Use it when the Streamer is available for te
 
 The script uses the isolated ADB server on port 5038 and verifies the exact `Google TV Streamer` model before installation. Override `STREAMER_ENDPOINT` if its address changes. The default is `192.168.1.50:5555`.
 
-Package: `ch.cri.hackertube`, version `0.3.8` (code 11). This is a development APK signed with the local Android debug key, not a Play Store release. WebView debugging is available only in debug builds.
+Package: `ch.cri.hackertube`, version `0.3.9` (code 12). This is a development APK signed with the local Android debug key, not a Play Store release. WebView debugging is available only in debug builds.
 
 ## Implementation
 

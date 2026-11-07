@@ -6,33 +6,25 @@
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <title>HackerTube player</title>
   <style>
-    html,body { margin:0; height:100%; background:#000; color:#d4deeb; font:16px sans-serif; }
-    body { display:flex; flex-direction:column; }
-    #video { width:100%; flex:1; border:0; min-height:0; }
-    #status { background:#10141c; padding:8px 16px; min-height:20px; text-align:center; }
+    html,body,#video { margin:0; width:100%; height:100%; overflow:hidden; background:#000; }
+    #video { border:0; }
   </style>
 </head>
 <body>
   <div id="video"></div>
-  <div id="status" role="status">Loading video…</div>
   <script>
     'use strict';
-    let player, ready = false;
-    const status = document.querySelector('#status');
-    const help = 'OK: play/pause · Left/Right: seek 10s · Down: controls · Back: browse';
-    // Use only the documented iframe API. YouTube retains its controls, branding, and ads.
+    let player, ready = false, error = null;
+    // Use only the documented iframe API. YouTube retains its branding and ads.
     window.onYouTubeIframeAPIReady = function () {
       player = new YT.Player('video', {
         host: 'https://www.youtube-nocookie.com',
         videoId: 'VIDEO_ID_PLACEHOLDER',
-        playerVars: { autoplay:1, playsinline:1, rel:0, fs:0, origin:location.origin },
+        // The Android activity owns remote input, so the iframe needs no on-screen controls.
+        playerVars: { autoplay:1, controls:0, disablekb:1, playsinline:1, rel:0, fs:0, origin:location.origin },
         events: {
-          onReady: () => { ready = true; status.textContent = help; player.playVideo(); },
-          onStateChange: event => {
-            if (event.data === YT.PlayerState.PLAYING) status.textContent = help;
-            if (event.data === YT.PlayerState.PAUSED) status.textContent = 'Paused · ' + help;
-          },
-          onError: event => { status.textContent = 'Video unavailable in the embedded player (' + event.data + '). Choose Open in YouTube.'; }
+          onReady: () => { ready = true; player.playVideo(); },
+          onError: event => { error = event.data; }
         }
       });
     };
@@ -50,13 +42,12 @@
       },
       // Read-only diagnostics are useful during the physical-device smoke test.
       get state() { return { ready, status:ready ? player.getPlayerState() : null,
-        time:ready ? player.getCurrentTime() : 0 }; }
+        time:ready ? player.getCurrentTime() : 0, error }; }
     };
     const script = document.createElement('script');
     script.src = 'https://www.youtube.com/iframe_api';
-    script.onerror = () => { status.textContent = 'Player could not load. Check the connection or choose Open in YouTube.'; };
+    script.onerror = () => { error = 'api'; };
     document.head.appendChild(script);
-    setTimeout(() => { if (!ready) status.textContent = 'Still loading. You can choose Open in YouTube or go back.'; }, 15000);
   </script>
 </body>
 </html>

@@ -127,3 +127,12 @@ Remote events were submitted through serial-pinned ADB on the physical device. H
 - The current route, content scroll offset, and zero root scroll stayed unchanged when focus returned to the menu. Routes without a selected menu section use Home as a fallback.
 - The current Scrolling Off preference was restored after testing. The app was left on Home.
 - Offline build, Android lint, JavaScript syntax check, and all four focused tests passed. Installed APK matched SHA-256 `8d0e3447eb1bd5ea5cb523391d83e6848561028e18a89ef796bfd5a5d7c8e999`.
+
+
+# Clean fullscreen player, version 0.3.9, 2026-11-07
+
+- The physical Google TV Streamer showed the video across the complete 960 x 540 CSS-pixel viewport. The iframe bottom was exactly 540 pixels, with no unused strip.
+- The player document contained zero buttons and zero status or instruction elements. A physical-device screenshot confirmed that no app controls or text appeared at the bottom.
+- Remote OK paused at 30.472 seconds and resumed playback. Right advanced to 40.472 seconds, and Left returned to 30.472 seconds.
+- Remote Back returned to the same HackerTube watch page in `MainActivity`, with Play fullscreen focused.
+- Offline build, Android lint, JavaScript syntax check, and all four focused tests passed. Installed APK matched SHA-256 `d4ffe4a1926e43bd2357cb50395ff576e1dd0583bd5bed21f9695d7f31b55580`.

@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.WindowManager;
 import android.webkit.CookieManager;
@@ -15,7 +14,6 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -26,7 +24,6 @@ import java.nio.charset.StandardCharsets;
 /** App-owned fullscreen host for the official YouTube player, with native remote controls. */
 public final class PlayerActivity extends Activity {
     private WebView player;
-    private LinearLayout controls;
     private String videoId;
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -62,12 +59,6 @@ public final class PlayerActivity extends Activity {
             }
         });
         root.addView(player, new LinearLayout.LayoutParams(-1, 0, 1));
-        controls = new LinearLayout(this);
-        controls.setGravity(Gravity.CENTER);
-        addButton("Play / Pause", () -> command("toggle"));
-        addButton("Open in YouTube", this::openYouTube);
-        addButton("Back to browsing", this::finish);
-        root.addView(controls, new LinearLayout.LayoutParams(-1, dp(60)));
         try {
             String html;
             try (var input = getAssets().open("player.html")) {
@@ -84,14 +75,6 @@ public final class PlayerActivity extends Activity {
         player.requestFocus();
     }
 
-    private int dp(int value) { return Math.round(value * getResources().getDisplayMetrics().density); }
-    private void addButton(String text, Runnable action) {
-        Button button = new Button(this);
-        button.setText(text);
-        button.setTextSize(16);
-        button.setOnClickListener(v -> action.run());
-        controls.addView(button, new LinearLayout.LayoutParams(-2, -1));
-    }
     private void command(String action) {
         player.evaluateJavascript("window.tvPlayer && tvPlayer.command('" + action + "')", null);
     }
@@ -108,31 +91,24 @@ public final class PlayerActivity extends Activity {
     }
 
     @Override public boolean dispatchKeyEvent(KeyEvent event) {
-        boolean inControls = controls != null && controls.hasFocus();
         int key = event.getKeyCode();
-        if (inControls && key == KeyEvent.KEYCODE_DPAD_UP) {
-            if (event.getAction() == KeyEvent.ACTION_DOWN) player.requestFocus();
-            return true;
-        }
-        if (!inControls && key == KeyEvent.KEYCODE_DPAD_DOWN) {
-            if (event.getAction() == KeyEvent.ACTION_DOWN) controls.getChildAt(0).requestFocus();
-            return true;
-        }
         String action = switch (key) {
             case KeyEvent.KEYCODE_MEDIA_PLAY -> "play";
             case KeyEvent.KEYCODE_MEDIA_PAUSE -> "pause";
             case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> "toggle";
             case KeyEvent.KEYCODE_MEDIA_REWIND -> "rewind";
             case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD -> "forward";
-            case KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> inControls ? null : "toggle";
-            case KeyEvent.KEYCODE_DPAD_LEFT -> inControls ? null : "rewind";
-            case KeyEvent.KEYCODE_DPAD_RIGHT -> inControls ? null : "forward";
+            case KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> "toggle";
+            case KeyEvent.KEYCODE_DPAD_LEFT -> "rewind";
+            case KeyEvent.KEYCODE_DPAD_RIGHT -> "forward";
             default -> null;
         };
         if (action != null) {
             if (event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0) command(action);
             return true;
         }
+        // Up and Down have no player UI to reveal. Consume them to keep the video undisturbed.
+        if (key == KeyEvent.KEYCODE_DPAD_UP || key == KeyEvent.KEYCODE_DPAD_DOWN) return true;
         return super.dispatchKeyEvent(event);
     }
     @Override protected void onPause() {
