@@ -2,11 +2,13 @@ package ch.cri.hackertube;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -103,6 +105,10 @@ public final class MainActivity extends Activity {
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 if (!request.isForMainFrame()) return false;
                 Uri uri = request.getUrl();
+                if (isSite(uri) && "/__tv_youtube_back".equals(uri.getPath())) {
+                    configureYouTubeBack();
+                    return true;
+                }
                 if (isSite(uri) && "/__tv_play".equals(uri.getPath())) {
                     String videoId = uri.getQueryParameter("v");
                     if (videoId != null && videoId.matches("[A-Za-z0-9_-]{11}")) {
@@ -127,7 +133,8 @@ public final class MainActivity extends Activity {
                 if (failed || !isSite(Uri.parse(url))) return;
                 // The adapter is idempotent; it observes SPA routes after the initial injection.
                 view.requestFocus();
-                view.evaluateJavascript(adapter, null);
+                view.evaluateJavascript("window.__tvYouTubeBackEnabled="
+                        + YouTubeBackService.isEnabled() + ";\n" + adapter, null);
                 loading.setVisibility(View.GONE);
             }
 
@@ -164,8 +171,9 @@ public final class MainActivity extends Activity {
             Intent youtube = new Intent(Intent.ACTION_VIEW,
                     Uri.parse("https://www.youtube.com/watch?v=" + videoId))
                     .setPackage("com.google.android.youtube.tv");
-            try { startActivity(youtube); return; }
+            try { YouTubeBackService.arm(); startActivity(youtube); return; }
             catch (ActivityNotFoundException unavailable) {
+                YouTubeBackService.clearSession();
                 Toast.makeText(this, R.string.youtube_unavailable, Toast.LENGTH_LONG).show();
             }
         }
@@ -173,6 +181,25 @@ public final class MainActivity extends Activity {
         startActivity(new Intent(this, PlayerActivity.class)
                 .putExtra("video_id", videoId)
                 .putExtra("captions_enabled", captionsEnabled));
+    }
+
+    private void configureYouTubeBack() {
+        if (YouTubeBackService.isEnabled()) {
+            YouTubeBackService.turnOff();
+            web.evaluateJavascript("window.HackerTubeTV && HackerTubeTV.setYouTubeBackEnabled(false)", null);
+            return;
+        }
+        // The user grants this special access in Android, never through a site request
+        // or a silent secure-settings write. Keep the disclosure readable with the remote.
+        new AlertDialog.Builder(this).setTitle(R.string.youtube_back_name)
+                .setMessage(R.string.youtube_back_setup)
+                .setNegativeButton(R.string.not_now, null)
+                .setPositiveButton(R.string.open_accessibility_settings, (dialog, which) -> {
+                    try { startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)); }
+                    catch (ActivityNotFoundException unavailable) {
+                        Toast.makeText(this, R.string.external_unavailable, Toast.LENGTH_LONG).show();
+                    }
+                }).show();
     }
 
     private void openExternal(Uri uri) {
@@ -184,8 +211,12 @@ public final class MainActivity extends Activity {
         String host = uri.getHost();
         // Prefer the TV YouTube player when the user explicitly selects the fallback link.
         if ("www.youtube.com".equals(host) || "youtube.com".equals(host) || "youtu.be".equals(host)) {
-            try { startActivity(new Intent(intent).setPackage("com.google.android.youtube.tv")); return; }
-            catch (ActivityNotFoundException ignored) { /* Try the system URL handler next. */ }
+            try {
+                YouTubeBackService.arm();
+                startActivity(new Intent(intent).setPackage("com.google.android.youtube.tv")); return;
+            } catch (ActivityNotFoundException ignored) {
+                YouTubeBackService.clearSession(); // Try the system URL handler next.
+            }
         }
         try { startActivity(intent); }
         catch (ActivityNotFoundException e) {
@@ -272,7 +303,17 @@ public final class MainActivity extends Activity {
         super.onPause();
     }
 
-    @Override protected void onResume() { super.onResume(); if (web != null) web.onResume(); }
+    @Override protected void onResume() {
+        super.onResume();
+        YouTubeBackService.clearSession();
+        if (web != null) {
+            web.onResume();
+            // Refresh after returning from Android's permission screen without reloading
+            // the current route or losing its selected card.
+            web.evaluateJavascript("window.HackerTubeTV && HackerTubeTV.setYouTubeBackEnabled("
+                    + YouTubeBackService.isEnabled() + ")", null);
+        }
+    }
     @Override protected void onSaveInstanceState(Bundle state) { web.saveState(state); super.onSaveInstanceState(state); }
     @Override protected void onDestroy() {
         closeCustomView();

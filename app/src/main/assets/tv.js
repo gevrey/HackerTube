@@ -19,6 +19,8 @@
   // Native YouTube has verified lip sync on the Streamer. Keep the embedded player
   // available as an explicit choice, without changing other saved preferences.
   let playbackPlayer = 'youtube';
+  // Permission lives in Android. The native host refreshes this value on every resume.
+  let youtubeBackEnabled = window.__tvYouTubeBackEnabled === true;
   try { if (localStorage.getItem(playbackSettingKey) === 'built-in') playbackPlayer = 'built-in'; } catch (_) {}
   // Small is two CSS pixels below the previous card and reader sizes. Ignore invalid saved values.
   let textSize = 'small';
@@ -321,6 +323,10 @@
         subtitle:playbackPlayer === 'youtube' ? 'For the built-in player only. YouTube has its own caption settings.'
           : 'Available captions, applied when a fullscreen video opens.',
         key:'captions', checked:captionsEnabled, action:toggleCaptions
+      }, { title:'YouTube Back: ' + (youtubeBackEnabled ? 'On' : 'Off'),
+        subtitle:youtubeBackEnabled ? 'Back returns here after playing a video in YouTube. Select to turn off.'
+          : 'Return here with Back. Select to enable the optional Accessibility helper.',
+        key:'youtube-back', checked:youtubeBackEnabled, action:() => { location.href = '/__tv_youtube_back'; }
       }, { title:'Video frames: ' + (checkbox?.checked ? 'On' : 'Off'),
         subtitle:'Select to change thumbnail style', key:'frames', action:() => { checkbox?.click(); render(); } },
         { title:'Read setting description', key:'setting-info', action:readSource }], tools:[] };
@@ -555,7 +561,12 @@
     return false;
   }
   window.HackerTubeTV = { media, back, refresh:render,
-    get state() { return { path, scrollEnabled, captionsEnabled, playbackPlayer, page:pageState().page, panel:panels.at(-1)?.title || null,
+    setYouTubeBackEnabled(enabled) {
+      if (youtubeBackEnabled === enabled) return;
+      youtubeBackEnabled = enabled === true;
+      render();
+    },
+    get state() { return { path, scrollEnabled, captionsEnabled, playbackPlayer, youtubeBackEnabled, page:pageState().page, panel:panels.at(-1)?.title || null,
       count:(panels.at(-1)?.items || model().items || []).length, canLoadMore:!!activeLoader() && !activeLoader().done }; } };
   render(true);
   // Re-render the current route once so its first batch uses our explicit loader.

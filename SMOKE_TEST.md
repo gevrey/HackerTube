@@ -179,3 +179,15 @@ Remote events were submitted through serial-pinned ADB on the physical device. H
 - Time formatting checks covered `0:00`, `1:05`, and `1:01:01`. Unknown durations display `--:--` and hide the progress bar.
 - Offline build, Android lint, player JavaScript syntax checking, and all four focused tests passed. Installed APK matched SHA-256 `f50af40310e7944084b454d85e4c813c02b99d4ba704d46deef0595dc35d9c49`.
 - The saved YouTube player choice was restored after testing; native YouTube manages its own pause overlay. Scrolling Off and Captions Off were preserved, and the temporary debugging forward was removed.
+
+
+# Direct return from YouTube, version 0.3.14, 2026-11-07
+
+- Added the optional YouTube Back setting. Installation left it Off. After Christophe approved the special access, the helper was enabled through the Streamer's Accessibility UI and its Android permission prompt. The service reports only key-filter capability 8, with no screen-content retrieval capability.
+- In a HackerTube-launched native YouTube session, one Back press returned to the same `/watch/gM95HHI4gLk` page with `item-play` focused. The YouTube media session was no longer active. This worked again after using YouTube's other controls.
+- An independently launched YouTube session kept its normal Back behavior. During an owned session, Home opened the Google TV launcher and cleared ownership. Reopening YouTube independently then pressing Back remained inside YouTube instead of returning to HackerTube.
+- Settings, YouTube Back turned the service Off, removed it from Android's enabled services, updated `aria-checked`, and preserved focus. Re-enabling used the same explicit Android permission flow. The pre-existing Button Mapper service was preserved throughout.
+- Tests used short-lived Android `uinput` virtual remotes on the physical Streamer, because ordinary `adb input keyevent` presses bypassed this Accessibility key filter. The virtual device was removed automatically after each test. No persistent remote mapping was installed.
+- The seven Settings cards use two fixed pages with Scrolling Off. Both pages retained a 540-pixel root, zero root scroll, and a content pane whose scroll height matched its 410-pixel client height. A screenshot verified the On setting and single orange focus border.
+- Offline build, Android lint, JavaScript syntax checking, four navigation tests, and eight Java session-ownership assertions passed. The installed APK matched SHA-256 `d5c11ebebe57b05423c3d08f0f97bdf9cdfbfc0023d568cb7e1242d9926e9077`.
+- The Streamer was left on Settings with YouTube Back On, YouTube selected as player, Scrolling Off, Small text, and Built-in captions Off. Temporary UI dumps and the WebView debugging forward were removed.

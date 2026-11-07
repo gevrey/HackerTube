@@ -86,8 +86,12 @@ public final class PlayerActivity extends Activity {
     private void openYouTube() {
         command("pause");
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/watch?v=" + videoId));
-        try { startActivity(new Intent(intent).setPackage("com.google.android.youtube.tv")); }
+        try {
+            YouTubeBackService.arm();
+            startActivity(new Intent(intent).setPackage("com.google.android.youtube.tv"));
+        }
         catch (ActivityNotFoundException e) {
+            YouTubeBackService.clearSession();
             try { startActivity(intent); }
             catch (ActivityNotFoundException unavailable) {
                 Toast.makeText(this, R.string.external_unavailable, Toast.LENGTH_LONG).show();

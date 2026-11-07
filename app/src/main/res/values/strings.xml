@@ -7,4 +7,9 @@
     <string name="external_unavailable">No app is available to open this link.</string>
     <string name="youtube_unavailable">YouTube TV is unavailable. Opening the built-in player.</string>
     <string name="blocked_link">This link cannot be opened from HackerTube.</string>
+    <string name="youtube_back_name">HackerTube YouTube Back</string>
+    <string name="youtube_back_description">Return to HackerTube with Back after opening a video in YouTube from HackerTube. The helper receives remote key events and app window changes. It uses only Back and the active app name, does not read screen contents, and stores or sends no event data. Other apps and independently opened YouTube sessions keep their normal controls.</string>
+    <string name="youtube_back_setup">Enable HackerTube YouTube Back in the next screen, then accept Android\'s permission prompt. This optional helper receives remote keys and app window changes to return from YouTube. It does not read screen contents or store or send event data. Turn it off at any time using this setting.</string>
+    <string name="open_accessibility_settings">Open Accessibility settings</string>
+    <string name="not_now">Not now</string>
 </resources>

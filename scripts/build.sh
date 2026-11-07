@@ -10,4 +10,10 @@ if [ -z "${ANDROID_HOME:-}" ] && [ -d "$HOME/Library/Android/sdk" ]; then
 fi
 node --test tests/navigation.test.cjs
 node --check app/src/main/assets/tv.js
+# Keep the cross-app shortcut checks independent of Android and external test libraries.
+session_test_dir=$(mktemp -d)
+trap 'rm -rf "$session_test_dir"' EXIT HUP INT TERM
+"${JAVA_HOME:+$JAVA_HOME/bin/}javac" -d "$session_test_dir" \
+    app/src/main/java/ch/cri/hackertube/YouTubeBackSession.java tests/YouTubeBackSessionTest.java
+"${JAVA_HOME:+$JAVA_HOME/bin/}java" -cp "$session_test_dir" ch.cri.hackertube.YouTubeBackSessionTest
 ./gradlew :app:assembleDebug :app:lintDebug --console=plain "$@"
