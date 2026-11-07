@@ -236,6 +236,20 @@
     const items = [...source.querySelectorAll('.filters a')].map(node => linkItem(node, text(node.parentElement.querySelector('h4')) + ': '));
     showPanel({ title:'Filters', items });
   }
+  function addAboutCredits() {
+    const original = source.querySelector('.about a[href="https://x.com/karpathy"]');
+    if (!original || original.dataset.tvCreditsAdded) return;
+    // Extend the app's live About view once per route render. Both the link cards and
+    // paged reader consume this DOM, so they retain the same credit order.
+    const profile = handle => {
+      const link = document.createElement('a');
+      link.href = 'https://x.com/' + handle;
+      link.target = '_blank'; link.rel = 'noopener'; link.textContent = '@' + handle;
+      return link;
+    };
+    original.after(', ', profile('gevrey'), ' and ', profile('cri'));
+    original.dataset.tvCreditsAdded = 'true';
+  }
   function model() {
     const watch = source.querySelector('.watch');
     if (watch) {
@@ -277,6 +291,7 @@
         subtitle:'Select to change thumbnail style', key:'frames', action:() => { checkbox?.click(); render(); } },
         { title:'Read setting description', key:'setting-info', action:readSource }], tools:[] };
     }
+    addAboutCredits();
     if (source.querySelector('.about')) return { title:document.title.replace(/ - HackerTube$/, ''), items:[
       { title:'Read this page', subtitle:'All text, in pages that fit the screen', key:'read', action:readSource },
       ...[...source.querySelectorAll('a[href]')].map(n => linkItem(n))], tools:[] };

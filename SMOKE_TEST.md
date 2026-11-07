@@ -104,3 +104,10 @@ Remote events were submitted through serial-pinned ADB on the physical device. H
 - All 11 menu labels fit. Remote Up from Home focused the logo, and OK on the logo returned from About to Home.
 - In the 300-pixel keyboard viewport, the logo and every menu button had no horizontal or vertical overflow. Root scroll offset stayed zero.
 - Offline build, lint, JavaScript syntax check, and four focused tests passed. Installed APK matched SHA-256 `a82a7ef6f9f3e483e168cbb89fd380be7586d9314b620f49c6beae075b53c538`.
+
+
+# About credit handles, version 0.3.6, 2026-11-07
+
+- The physical Streamer showed About links in the order `@karpathy`, `@gevrey`, `@cri`, with matching `https://x.com/` profile destinations.
+- Repeated renders did not duplicate the added handles. The About reader included `@karpathy, @gevrey and @cri`, and root scrolling remained zero.
+- Offline build, lint, JavaScript syntax check, and four focused tests passed. Installed APK matched SHA-256 `038f578b0c009d2326049e7745c4a0833957d1857d7a13ce06a2e3f38b27afff`.
