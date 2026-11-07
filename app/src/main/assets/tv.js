@@ -132,8 +132,6 @@
     const node = button(text(link), 'nav-' + index, () => go(link.getAttribute('href')));
     node.dataset.path = link.getAttribute('href'); q('#tv-nav').appendChild(node);
   });
-  const about = button('About', 'about', () => go('/about'));
-  about.dataset.path = '/about'; q('#tv-nav').appendChild(about);
   const search = button('Search', 'search-toggle', openSearch);
   search.setAttribute('aria-expanded', 'false'); q('#tv-nav').appendChild(search);
   q('#tv-nav').appendChild(button('Filters', 'filters', openFilters));
@@ -142,6 +140,9 @@
     const node = button('Settings', 'nav-settings', () => go('/settings'));
     node.dataset.path = '/settings'; q('#tv-nav').appendChild(node);
   }
+  // About is the final menu item, after Settings, in both browsing modes.
+  const about = button('About', 'about', () => go('/about'));
+  about.dataset.path = '/about'; q('#tv-nav').appendChild(about);
 
   // Replace implicit infinite scrolling with an explicit next-batch loader. It uses the
   // site's own API callback and card renderer, preserving preferences and filter semantics.

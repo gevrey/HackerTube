@@ -89,3 +89,10 @@ Remote events were submitted through serial-pinned ADB on the physical device. H
 - Large survived a cold app restart. The test restored Small and the user's Scrolling On preference.
 - With scrolling temporarily Off, a six-page details view fitted its 330-pixel reader exactly, with zero root scroll and no clipped page content.
 - Offline build, lint, JavaScript syntax check, and all four focused tests passed. Installed APK SHA-256 matched the build: `3eb7215b480ab217c4c08456cf91b1a9b9b90318c143784f353519914ea4ab43`.
+
+
+# About menu order, version 0.3.4, 2026-11-07
+
+- On the physical Google TV Streamer, the last four menu items were Search, Filters, Settings, About.
+- A remote Down press from Settings focused About, and OK opened `/about`. Root scroll remained zero in the 540-pixel viewport.
+- Offline build, lint, JavaScript syntax check, and four focused tests passed. Installed APK matched the local SHA-256: `538e174773a1fbd2330d29e9fbd3e844228147f49d2a477a93d7a82818a6667d`.
