@@ -168,3 +168,14 @@ Remote events were submitted through serial-pinned ADB on the physical device. H
 - Native YouTube owns its controls, caption settings, and Back navigation. Back opened YouTube's own screens. Reopening HackerTube restored the same watch page with Play focused. Direct one-press Back to browsing remains specific to the built-in player.
 - The no-YouTube installation fallback is implemented but was not exercised by removing or disabling the installed app.
 - Offline build, Android lint, JavaScript syntax checking, and all four focused tests passed. Installed APK matched SHA-256 `36cfcd5475cd0b22adbce692f448263ddc8a952489e65cad51c40346db204a88`. The Streamer was left on Settings with YouTube selected.
+
+
+# Pause progress overlay, version 0.3.13, 2026-11-07
+
+- On the physical Google TV Streamer, remote OK paused the built-in player and showed elapsed time, total duration, and an orange progress bar in the top-right corner. The test video displayed `0:07 / 20:27`.
+- A screenshot confirmed that the overlay fit entirely inside the fullscreen video, with no bottom buttons or instructions. The overlay measured 300 by 114 CSS pixels at x=636, y=24 in the 960 by 540 viewport. The player document still contained zero buttons.
+- Remote Right while paused advanced the position and label to `0:17 / 20:27`, and increased the progress bar. Remote Left returned both to the earlier position while remaining paused.
+- Remote OK resumed playback, hid the overlay, and stopped its update timer. Remote Back returned to the same HackerTube watch page with Play focused.
+- Time formatting checks covered `0:00`, `1:05`, and `1:01:01`. Unknown durations display `--:--` and hide the progress bar.
+- Offline build, Android lint, player JavaScript syntax checking, and all four focused tests passed. Installed APK matched SHA-256 `f50af40310e7944084b454d85e4c813c02b99d4ba704d46deef0595dc35d9c49`.
+- The saved YouTube player choice was restored after testing; native YouTube manages its own pause overlay. Scrolling Off and Captions Off were preserved, and the temporary debugging forward was removed.

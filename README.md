@@ -16,7 +16,7 @@ The HackerTube logo sits above the left menu and opens Home when selected. The m
 | Search | Select Search near the bottom of the left menu. The hidden field appears and opens the TV keyboard. Submit with the keyboard or Go; Back hides the field. |
 | Watch page | Select the poster or Play in YouTube to start with the default player. With Built-in selected, the action is Play fullscreen. Open in YouTube is always available. |
 | Native YouTube player | Uses YouTube's own remote controls, overlays, captions, and Back navigation. Back first opens YouTube's screens, rather than returning directly to HackerTube. Reopening HackerTube restores the watch page with Play focused. |
-| Built-in player | The video fills the screen with no app buttons or instructions. OK toggles play/pause, Left/Right seek 10 seconds, and Back returns directly to the watch page. |
+| Built-in player | OK toggles play/pause, Left/Right seek 10 seconds, and Back returns directly to the watch page. While paused, a top-right overlay shows elapsed time, total length, and a progress bar. It updates after seeking and disappears on resume. There are no app buttons or instructions. |
 
 ## Build
 
@@ -40,7 +40,7 @@ This interrupts the current TV app. Use it when the Streamer is available for te
 
 The script uses the isolated ADB server on port 5038 and verifies the exact `Google TV Streamer` model before installation. Override `STREAMER_ENDPOINT` if its address changes. The default is `192.168.1.50:5555`.
 
-Package: `ch.cri.hackertube`, version `0.3.12` (code 15). This is a development APK signed with the local Android debug key, not a Play Store release. WebView debugging is available only in debug builds.
+Package: `ch.cri.hackertube`, version `0.3.13` (code 16). This is a development APK signed with the local Android debug key, not a Play Store release. WebView debugging is available only in debug builds.
 
 ## Implementation
 

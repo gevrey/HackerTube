@@ -8,14 +8,68 @@
   <style>
     html,body,#video { margin:0; width:100%; height:100%; overflow:hidden; background:#000; }
     #video { border:0; }
+    /* A read-only pause summary stays away from captions and never takes remote focus. */
+    #pause-overlay { position:fixed; top:24px; right:24px; z-index:2; width:300px;
+      box-sizing:border-box; padding:18px 22px; border-radius:12px; background:rgba(16,20,28,.94);
+      color:#f4f6fb; font:14px/1.4 sans-serif; pointer-events:none; }
+    #pause-overlay[hidden],#pause-progress[hidden] { display:none; }
+    #pause-label { color:#bac7d8; }
+    #pause-time { margin:4px 0 12px; font-size:26px; font-variant-numeric:tabular-nums; }
+    #pause-progress { height:6px; overflow:hidden; border-radius:3px; background:#465267; }
+    #pause-fill { height:100%; width:0; background:#ffad6c; }
   </style>
 </head>
 <body>
   <div id="video"></div>
+  <aside id="pause-overlay" hidden aria-label="Playback progress">
+    <div id="pause-label">Paused</div>
+    <div id="pause-time" role="status" aria-live="polite"></div>
+    <div id="pause-progress" role="progressbar" aria-label="Video progress" aria-valuemin="0">
+      <div id="pause-fill"></div>
+    </div>
+  </aside>
   <script>
     'use strict';
     let player, ready = false, error = null;
     const captionsEnabled = CAPTIONS_ENABLED_PLACEHOLDER;
+    const pauseOverlay = document.getElementById('pause-overlay');
+    const pauseTime = document.getElementById('pause-time');
+    const pauseProgress = document.getElementById('pause-progress');
+    const pauseFill = document.getElementById('pause-fill');
+    let pauseTimer = null;
+    function formatTime(seconds) {
+      const total = Math.max(0, Math.floor(seconds));
+      const hours = Math.floor(total / 3600), minutes = Math.floor(total / 60) % 60;
+      const tail = String(total % 60).padStart(2, '0');
+      return hours ? hours + ':' + String(minutes).padStart(2, '0') + ':' + tail
+        : minutes + ':' + tail;
+    }
+    function updatePauseProgress() {
+      const rawDuration = player.getDuration(), rawTime = player.getCurrentTime();
+      const duration = Number.isFinite(rawDuration) && rawDuration > 0 ? rawDuration : 0;
+      const elapsed = Number.isFinite(rawTime) ? Math.max(0, duration ? Math.min(rawTime, duration) : rawTime) : 0;
+      const label = formatTime(elapsed) + ' / ' + (duration ? formatTime(duration) : '--:--');
+      // Only announce a changed timestamp. Duration can remain unknown until metadata arrives.
+      if (pauseTime.textContent !== label) pauseTime.textContent = label;
+      pauseProgress.hidden = !duration;
+      pauseFill.style.width = (duration ? 100 * elapsed / duration : 0) + '%';
+      pauseProgress.setAttribute('aria-valuemax', String(duration));
+      pauseProgress.setAttribute('aria-valuenow', String(Math.floor(elapsed)));
+      pauseProgress.setAttribute('aria-valuetext', label);
+    }
+    function showPauseProgress(paused) {
+      clearInterval(pauseTimer); pauseTimer = null;
+      pauseOverlay.hidden = !paused || document.hidden || !ready;
+      if (pauseOverlay.hidden) return;
+      updatePauseProgress();
+      // Seeking while paused updates the iframe's cached time asynchronously. Poll only
+      // while this summary is visible; playback itself never runs an overlay timer.
+      pauseTimer = setInterval(updatePauseProgress, 250);
+    }
+    document.addEventListener('visibilitychange', () => {
+      showPauseProgress(ready && player.getPlayerState() === YT.PlayerState.PAUSED);
+    });
+    window.addEventListener('pagehide', () => showPauseProgress(false));
     // YouTube retains its branding and ads. Caption modules arrive asynchronously, so
     // apply Off when the API announces them as well as when the player becomes ready.
     function applyCaptionPreference(target) {
@@ -39,7 +93,8 @@
         events: {
           onReady: event => { ready = true; applyCaptionPreference(event.target); player.playVideo(); },
           onApiChange: event => applyCaptionPreference(event.target),
-          onError: event => { error = event.data; }
+          onStateChange: event => showPauseProgress(event.data === YT.PlayerState.PAUSED),
+          onError: event => { error = event.data; showPauseProgress(false); }
         }
       });
     };
@@ -57,7 +112,8 @@
       },
       // Read-only diagnostics are useful during the physical-device smoke test.
       get state() { return { ready, status:ready ? player.getPlayerState() : null,
-        time:ready ? player.getCurrentTime() : 0, captionsEnabled, error }; }
+        time:ready ? player.getCurrentTime() : 0, duration:ready ? player.getDuration() : 0,
+        pauseOverlayVisible:!pauseOverlay.hidden, captionsEnabled, error }; }
     };
     const script = document.createElement('script');
     script.src = 'https://www.youtube.com/iframe_api';

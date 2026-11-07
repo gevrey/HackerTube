@@ -66,7 +66,7 @@ public final class PlayerActivity extends Activity {
                 byte[] buffer = new byte[8192]; int count;
                 while ((count = input.read(buffer)) != -1) bytes.write(buffer, 0, count);
                 // Substitute only the validated ID and a native boolean literal into our asset.
-                // A fresh player applies the saved caption preference without adding fullscreen UI.
+                // A fresh player applies the saved caption preference to the fullscreen document.
                 html = bytes.toString(StandardCharsets.UTF_8.name())
                         .replace("VIDEO_ID_PLACEHOLDER", videoId)
                         .replace("CAPTIONS_ENABLED_PLACEHOLDER",
