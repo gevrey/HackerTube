@@ -15,15 +15,30 @@
   <script>
     'use strict';
     let player, ready = false, error = null;
-    // Use only the documented iframe API. YouTube retains its branding and ads.
+    const captionsEnabled = CAPTIONS_ENABLED_PLACEHOLDER;
+    // YouTube retains its branding and ads. Caption modules arrive asynchronously, so
+    // apply Off when the API announces them as well as when the player becomes ready.
+    function applyCaptionPreference(target) {
+      if (captionsEnabled) return;
+      // cc_load_policy=0 alone respects a remembered YouTube preference and can leave
+      // captions visible. The live player advertises a track option; an empty track
+      // disables captions. Feature-detect it because it is not in the stable API docs.
+      if ((target.getOptions('captions') || []).includes('track')) {
+        target.setOption('captions', 'track', {});
+      }
+    }
     window.onYouTubeIframeAPIReady = function () {
       player = new YT.Player('video', {
         host: 'https://www.youtube-nocookie.com',
         videoId: 'VIDEO_ID_PLACEHOLDER',
         // The Android activity owns remote input, so the iframe needs no on-screen controls.
-        playerVars: { autoplay:1, controls:0, disablekb:1, playsinline:1, rel:0, fs:0, origin:location.origin },
+        // YouTube chooses an available caption language. Its documented load policy forces
+        // captions on with 1; 0 leaves the embed's normal caption preference in effect.
+        playerVars: { autoplay:1, controls:0, disablekb:1, playsinline:1, rel:0, fs:0,
+          cc_load_policy:captionsEnabled ? 1 : 0, origin:location.origin },
         events: {
-          onReady: () => { ready = true; player.playVideo(); },
+          onReady: event => { ready = true; applyCaptionPreference(event.target); player.playVideo(); },
+          onApiChange: event => applyCaptionPreference(event.target),
           onError: event => { error = event.data; }
         }
       });
@@ -42,7 +57,7 @@
       },
       // Read-only diagnostics are useful during the physical-device smoke test.
       get state() { return { ready, status:ready ? player.getPlayerState() : null,
-        time:ready ? player.getCurrentTime() : 0, error }; }
+        time:ready ? player.getCurrentTime() : 0, captionsEnabled, error }; }
     };
     const script = document.createElement('script');
     script.src = 'https://www.youtube.com/iframe_api';

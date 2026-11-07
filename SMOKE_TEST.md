@@ -145,3 +145,14 @@ Remote events were submitted through serial-pinned ADB on the physical device. H
 - At the first loaded-batch boundary, one remote Right press loaded 36 more videos, changed page 6 to page 7, and focused the first tile. Left returned to the right edge of page 6.
 - Within page 1, Left moved normally between adjacent thumbnails. Crossing its left edge focused the selected Home menu item. Root and content scroll offsets remained zero.
 - Offline build, Android lint, JavaScript syntax check, and all four focused tests passed. Installed APK matched SHA-256 `f0e121fa484d2ae68f5dff58440cd92e67af83dff361657c78c2c7e02c5ee8ee`.
+
+
+# Caption setting, version 0.3.11, 2026-11-07
+
+- Settings contains a Captions On/Off switch, defaulting to Off. Remote OK toggled both ways, updated `aria-checked`, saved the preference, and retained focus on the switch.
+- All five Settings cards fit on one page. Root scroll stayed zero, and the content pane's scroll height equalled its 410-pixel client height.
+- Captions On survived a cold app restart. Scrolling Off and Small video text were preserved throughout testing.
+- On the physical Google TV Streamer, the final APK showed English captions around 31 seconds in `gM95HHI4gLk` with On. After remote Back, switching Off in Settings, and reopening the same video, the same passage had no captions. No caption state was changed through the debugger during this final comparison.
+- Testing found that `cc_load_policy=0` alone kept captions enabled by YouTube's preference. The implementation also clears the active track after the caption API becomes available. The live player advertises this option, but it is not a documented stable API; the code checks its availability and the README records the maintenance limitation.
+- The fullscreen host still contains zero app buttons. Remote Back returns to browsing. The Streamer was left on Settings with Captions Off and the toggle focused.
+- Offline build, Android lint, JavaScript syntax validation, and all four focused tests passed. Installed APK matched SHA-256 `e9c637a178792e271f1a56b0e0bd7a16bcb05bdc44b2303d0730e7b49f6ea88f`.

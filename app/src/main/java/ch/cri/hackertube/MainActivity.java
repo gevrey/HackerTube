@@ -107,7 +107,8 @@ public final class MainActivity extends Activity {
                     String videoId = uri.getQueryParameter("v");
                     if (videoId != null && videoId.matches("[A-Za-z0-9_-]{11}")) {
                         startActivity(new Intent(MainActivity.this, PlayerActivity.class)
-                                .putExtra("video_id", videoId));
+                                .putExtra("video_id", videoId)
+                                .putExtra("captions_enabled", "1".equals(uri.getQueryParameter("captions"))));
                     }
                     return true;
                 }

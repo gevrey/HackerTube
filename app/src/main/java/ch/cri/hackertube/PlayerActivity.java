@@ -65,7 +65,12 @@ public final class PlayerActivity extends Activity {
                 ByteArrayOutputStream bytes = new ByteArrayOutputStream();
                 byte[] buffer = new byte[8192]; int count;
                 while ((count = input.read(buffer)) != -1) bytes.write(buffer, 0, count);
-                html = bytes.toString(StandardCharsets.UTF_8.name()).replace("VIDEO_ID_PLACEHOLDER", videoId);
+                // Substitute only the validated ID and a native boolean literal into our asset.
+                // A fresh player applies the saved caption preference without adding fullscreen UI.
+                html = bytes.toString(StandardCharsets.UTF_8.name())
+                        .replace("VIDEO_ID_PLACEHOLDER", videoId)
+                        .replace("CAPTIONS_ENABLED_PLACEHOLDER",
+                                Boolean.toString(getIntent().getBooleanExtra("captions_enabled", false)));
             }
             // YouTube requires the embedding app's identity as the WebView referrer.
             // The package-name origin identifies this app, not HackerTube's website.

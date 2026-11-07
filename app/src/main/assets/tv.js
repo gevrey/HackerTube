@@ -6,10 +6,15 @@
   const gridColumns = 3;
   const scrollSettingKey = 'cri.hackertube.scrollEnabled';
   const textSizeKey = 'cri.hackertube.textSize';
+  const captionsSettingKey = 'cri.hackertube.captionsEnabled';
   const textSizes = ['small', 'medium', 'large'];
   // Default to the existing paged layout. Storage failures must not prevent app startup.
   let scrollEnabled = false;
   try { scrollEnabled = localStorage.getItem(scrollSettingKey) === 'true'; } catch (_) {}
+  // Captions start off and are passed to each new fullscreen player. Keep browsing usable
+  // when WebView storage is unavailable, just as with the other local preferences.
+  let captionsEnabled = false;
+  try { captionsEnabled = localStorage.getItem(captionsSettingKey) === 'true'; } catch (_) {}
   // Small is two CSS pixels below the previous card and reader sizes. Ignore invalid saved values.
   let textSize = 'small';
   try {
@@ -195,6 +200,12 @@
     render();
     focus(shell.querySelector('[data-key="item-scrolling"]'));
   }
+  function toggleCaptions() {
+    captionsEnabled = !captionsEnabled;
+    try { localStorage.setItem(captionsSettingKey, String(captionsEnabled)); } catch (_) {}
+    render();
+    focus(shell.querySelector('[data-key="item-captions"]'));
+  }
   function cycleTextSize() {
     textSize = textSizes[(textSizes.indexOf(textSize) + 1) % textSizes.length];
     try { localStorage.setItem(textSizeKey, textSize); } catch (_) {}
@@ -215,7 +226,10 @@
   function media(command) {
     if (command !== 'play' && command !== 'toggle') return;
     const vid = location.pathname.split('/')[2];
-    if (/^[A-Za-z0-9_-]{11}$/.test(vid || '')) location.href = '/__tv_play?v=' + encodeURIComponent(vid);
+    // The native host accepts a boolean flag, never JavaScript or arbitrary player options.
+    if (/^[A-Za-z0-9_-]{11}$/.test(vid || '')) {
+      location.href = '/__tv_play?v=' + encodeURIComponent(vid) + '&captions=' + (captionsEnabled ? '1' : '0');
+    }
   }
   function linkItem(node, prefix = '') {
     return { title:prefix + (text(node.querySelector('.vt')) || text(node) || node.getAttribute('aria-label') || 'Open'),
@@ -286,6 +300,9 @@
         key:'scrolling', checked:scrollEnabled, action:toggleScrolling
       }, { title:'Video text size: ' + textSize[0].toUpperCase() + textSize.slice(1),
         subtitle:'Select to cycle Small, Medium, Large', key:'text-size', action:cycleTextSize
+      }, { title:'Captions: ' + (captionsEnabled ? 'On' : 'Off'),
+        subtitle:'Available captions, applied when a fullscreen video opens.',
+        key:'captions', checked:captionsEnabled, action:toggleCaptions
       }, { title:'Video frames: ' + (checkbox?.checked ? 'On' : 'Off'),
         subtitle:'Select to change thumbnail style', key:'frames', action:() => { checkbox?.click(); render(); } },
         { title:'Read setting description', key:'setting-info', action:readSource }], tools:[] };
@@ -520,7 +537,7 @@
     return false;
   }
   window.HackerTubeTV = { media, back, refresh:render,
-    get state() { return { path, scrollEnabled, page:pageState().page, panel:panels.at(-1)?.title || null,
+    get state() { return { path, scrollEnabled, captionsEnabled, page:pageState().page, panel:panels.at(-1)?.title || null,
       count:(panels.at(-1)?.items || model().items || []).length, canLoadMore:!!activeLoader() && !activeLoader().done }; } };
   render(true);
   // Re-render the current route once so its first batch uses our explicit loader.
