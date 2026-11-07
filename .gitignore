@@ -1,1 +1,19 @@
 node_modules/
+.gradle/
+**/build/
+local.properties
+.idea/
+*.iml
+.DS_Store
+*.jks
+*.keystore
+artifacts/
+
+# Local credentials and generated distribution files must never be published.
+.env
+.env.*
+!.env.example
+*.apk
+*.aab
+*.pem
+*.key
