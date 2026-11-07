@@ -96,3 +96,11 @@ Remote events were submitted through serial-pinned ADB on the physical device. H
 - On the physical Google TV Streamer, the last four menu items were Search, Filters, Settings, About.
 - A remote Down press from Settings focused About, and OK opened `/about`. Root scroll remained zero in the 540-pixel viewport.
 - Offline build, lint, JavaScript syntax check, and four focused tests passed. Installed APK matched the local SHA-256: `538e174773a1fbd2330d29e9fbd3e844228147f49d2a477a93d7a82818a6667d`.
+
+
+# Sidebar logo, version 0.3.5, 2026-11-07
+
+- Restored the white and orange HackerTube wordmark above the left menu. Its sidebar-only placement keeps the Home video pane at 420 CSS pixels high.
+- All 11 menu labels fit. Remote Up from Home focused the logo, and OK on the logo returned from About to Home.
+- In the 300-pixel keyboard viewport, the logo and every menu button had no horizontal or vertical overflow. Root scroll offset stayed zero.
+- Offline build, lint, JavaScript syntax check, and four focused tests passed. Installed APK matched SHA-256 `a82a7ef6f9f3e483e168cbb89fd380be7586d9314b620f49c6beae075b53c538`.

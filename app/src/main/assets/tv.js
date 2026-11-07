@@ -43,6 +43,9 @@
     #tv-shell button[aria-disabled=true].tv-focus { opacity:1; color:#9aaec5; }
     #tv-shell .tv-focus { border-color:#ffad6c!important; outline:none!important; background-color:#34465e; }
     #tv-main { display:grid; grid-template-columns:150px minmax(0,1fr); gap:22px; overflow:hidden; }
+    #tv-sidebar { display:grid; grid-template-rows:40px minmax(0,1fr); gap:8px; }
+    #tv-shell #tv-brand { padding:0 3px; font-size:24px; line-height:1.2; font-weight:700; text-align:left; background:transparent; }
+    #tv-brand span { color:#ff8d42; }
     #tv-nav { display:grid; grid-template-rows:repeat(11,minmax(0,1fr)); gap:5px; padding:3px; }
     #tv-nav button { text-align:left; padding:4px 10px; font-size:16px; }
     #tv-nav button[aria-current=page] { color:#ffad6c; }
@@ -79,7 +82,9 @@
     @media(max-height:440px) { #tv-shell { inset:10px 18px; gap:8px; grid-template-rows:minmax(0,1fr) 16px; }
       #tv-content { gap:6px; } #tv-title { height:24px; } #tv-tools { height:30px; }
       #tv-search { height:38px; } #tv-pager { height:32px; }
-      #tv-nav { gap:3px; } #tv-nav button { font-size:14px; padding:3px 8px; }
+      #tv-sidebar { grid-template-rows:28px minmax(0,1fr); gap:4px; }
+      #tv-shell #tv-brand { font-size:20px; }
+      #tv-nav { gap:2px; } #tv-nav button { font-size:12px; line-height:1.1; padding:0 8px; }
       #tv-reading { font-size:calc(var(--tv-text-size) - 3px); line-height:1.35; } .tv-cards { gap:9px; }
       .tv-card strong { font-size:calc(var(--tv-card-title-size) - 2px); line-height:calc(var(--tv-card-title-size) + 1px); }
       .tv-card small { font-size:calc(var(--tv-card-subtitle-size) - 2px); }
@@ -89,7 +94,10 @@
   const shell = document.createElement('div');
   shell.id = 'tv-shell';
   shell.dataset.textSize = textSize;
-  shell.innerHTML = `<div id="tv-main"><nav id="tv-nav" aria-label="Sections"></nav><section id="tv-content">
+  // Keep the wordmark inside the sidebar so it does not take height away from the video grid.
+  shell.innerHTML = `<div id="tv-main"><aside id="tv-sidebar">
+      <button type="button" id="tv-brand" data-key="brand" aria-label="HackerTube home">Hacker<span>Tube</span></button>
+      <nav id="tv-nav" aria-label="Sections"></nav></aside><section id="tv-content">
       <form id="tv-search"><input id="tv-query" type="search" aria-label="Search videos" placeholder="Search videos" autocomplete="off" data-key="query">
         <button data-key="search-submit">Go</button></form>
       <h1 id="tv-title"></h1><div id="tv-tools"></div><div id="tv-body"></div>
@@ -111,6 +119,7 @@
   function go(url) {
     pendingFilters = false; setSearchOpen(false); savedPages.set(path, page); navigate(url);
   }
+  q('#tv-brand').onclick = () => go('/');
   function openSearch() {
     // The field only takes vertical space when Search is selected from the menu.
     setSearchOpen(true); focus(q('#tv-query'));
