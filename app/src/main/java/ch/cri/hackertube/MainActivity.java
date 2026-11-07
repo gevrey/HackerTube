@@ -106,9 +106,8 @@ public final class MainActivity extends Activity {
                 if (isSite(uri) && "/__tv_play".equals(uri.getPath())) {
                     String videoId = uri.getQueryParameter("v");
                     if (videoId != null && videoId.matches("[A-Za-z0-9_-]{11}")) {
-                        startActivity(new Intent(MainActivity.this, PlayerActivity.class)
-                                .putExtra("video_id", videoId)
-                                .putExtra("captions_enabled", "1".equals(uri.getQueryParameter("captions"))));
+                        playVideo(videoId, "1".equals(uri.getQueryParameter("captions")),
+                                "built-in".equals(uri.getQueryParameter("player")));
                     }
                     return true;
                 }
@@ -156,6 +155,24 @@ public final class MainActivity extends Activity {
 
     private static boolean isSite(Uri uri) {
         return "https".equals(uri.getScheme()) && "hackertube.org".equals(uri.getHost());
+    }
+
+    private void playVideo(String videoId, boolean captionsEnabled, boolean builtIn) {
+        if (!builtIn) {
+            // The TV app handles HDMI audio/video synchronization correctly on this device.
+            // Target it explicitly so an unrelated browser cannot become the default player.
+            Intent youtube = new Intent(Intent.ACTION_VIEW,
+                    Uri.parse("https://www.youtube.com/watch?v=" + videoId))
+                    .setPackage("com.google.android.youtube.tv");
+            try { startActivity(youtube); return; }
+            catch (ActivityNotFoundException unavailable) {
+                Toast.makeText(this, R.string.youtube_unavailable, Toast.LENGTH_LONG).show();
+            }
+        }
+        // Preserve the app-owned player and its caption preference as a selectable fallback.
+        startActivity(new Intent(this, PlayerActivity.class)
+                .putExtra("video_id", videoId)
+                .putExtra("captions_enabled", captionsEnabled));
     }
 
     private void openExternal(Uri uri) {

@@ -5,5 +5,6 @@
     <string name="retry">Try again</string>
     <string name="home">Home</string>
     <string name="external_unavailable">No app is available to open this link.</string>
+    <string name="youtube_unavailable">YouTube TV is unavailable. Opening the built-in player.</string>
     <string name="blocked_link">This link cannot be opened from HackerTube.</string>
 </resources>

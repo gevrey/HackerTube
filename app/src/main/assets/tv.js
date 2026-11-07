@@ -7,6 +7,7 @@
   const scrollSettingKey = 'cri.hackertube.scrollEnabled';
   const textSizeKey = 'cri.hackertube.textSize';
   const captionsSettingKey = 'cri.hackertube.captionsEnabled';
+  const playbackSettingKey = 'cri.hackertube.playbackPlayer';
   const textSizes = ['small', 'medium', 'large'];
   // Default to the existing paged layout. Storage failures must not prevent app startup.
   let scrollEnabled = false;
@@ -15,6 +16,10 @@
   // when WebView storage is unavailable, just as with the other local preferences.
   let captionsEnabled = false;
   try { captionsEnabled = localStorage.getItem(captionsSettingKey) === 'true'; } catch (_) {}
+  // Native YouTube has verified lip sync on the Streamer. Keep the embedded player
+  // available as an explicit choice, without changing other saved preferences.
+  let playbackPlayer = 'youtube';
+  try { if (localStorage.getItem(playbackSettingKey) === 'built-in') playbackPlayer = 'built-in'; } catch (_) {}
   // Small is two CSS pixels below the previous card and reader sizes. Ignore invalid saved values.
   let textSize = 'small';
   try {
@@ -206,6 +211,12 @@
     render();
     focus(shell.querySelector('[data-key="item-captions"]'));
   }
+  function togglePlaybackPlayer() {
+    playbackPlayer = playbackPlayer === 'youtube' ? 'built-in' : 'youtube';
+    try { localStorage.setItem(playbackSettingKey, playbackPlayer); } catch (_) {}
+    render();
+    focus(shell.querySelector('[data-key="item-playback-player"]'));
+  }
   function cycleTextSize() {
     textSize = textSizes[(textSizes.indexOf(textSize) + 1) % textSizes.length];
     try { localStorage.setItem(textSizeKey, textSize); } catch (_) {}
@@ -226,9 +237,11 @@
   function media(command) {
     if (command !== 'play' && command !== 'toggle') return;
     const vid = location.pathname.split('/')[2];
-    // The native host accepts a boolean flag, never JavaScript or arbitrary player options.
+    // Pass only the selected player and caption flag to the native host, which validates
+    // the video ID and explicitly targets the installed YouTube TV package.
     if (/^[A-Za-z0-9_-]{11}$/.test(vid || '')) {
-      location.href = '/__tv_play?v=' + encodeURIComponent(vid) + '&captions=' + (captionsEnabled ? '1' : '0');
+      location.href = '/__tv_play?v=' + encodeURIComponent(vid) + '&captions=' + (captionsEnabled ? '1' : '0')
+        + '&player=' + playbackPlayer;
     }
   }
   function linkItem(node, prefix = '') {
@@ -268,7 +281,7 @@
     if (watch) {
       const title = text(watch.querySelector('h1'));
       const items = [
-        { title:'Play fullscreen', subtitle:title, image:watch.querySelector('#poster img')?.src,
+        { title:playbackPlayer === 'youtube' ? 'Play in YouTube' : 'Play fullscreen', subtitle:title, image:watch.querySelector('#poster img')?.src,
           key:'play', action:() => media('play') },
         { title:'Read details and comments', subtitle:'Full title, description, and discussion', key:'details', action:readSource }
       ];
@@ -300,8 +313,13 @@
         key:'scrolling', checked:scrollEnabled, action:toggleScrolling
       }, { title:'Video text size: ' + textSize[0].toUpperCase() + textSize.slice(1),
         subtitle:'Select to cycle Small, Medium, Large', key:'text-size', action:cycleTextSize
-      }, { title:'Captions: ' + (captionsEnabled ? 'On' : 'Off'),
-        subtitle:'Available captions, applied when a fullscreen video opens.',
+      }, { title:'Player: ' + (playbackPlayer === 'youtube' ? 'YouTube' : 'Built-in'),
+        subtitle:playbackPlayer === 'youtube' ? 'Recommended for audio sync. Uses YouTube controls and captions.'
+          : 'Minimal fullscreen controls. Audio may lag on this TV.',
+        key:'playback-player', action:togglePlaybackPlayer
+      }, { title:'Built-in captions: ' + (captionsEnabled ? 'On' : 'Off'),
+        subtitle:playbackPlayer === 'youtube' ? 'For the built-in player only. YouTube has its own caption settings.'
+          : 'Available captions, applied when a fullscreen video opens.',
         key:'captions', checked:captionsEnabled, action:toggleCaptions
       }, { title:'Video frames: ' + (checkbox?.checked ? 'On' : 'Off'),
         subtitle:'Select to change thumbnail style', key:'frames', action:() => { checkbox?.click(); render(); } },
@@ -537,7 +555,7 @@
     return false;
   }
   window.HackerTubeTV = { media, back, refresh:render,
-    get state() { return { path, scrollEnabled, captionsEnabled, page:pageState().page, panel:panels.at(-1)?.title || null,
+    get state() { return { path, scrollEnabled, captionsEnabled, playbackPlayer, page:pageState().page, panel:panels.at(-1)?.title || null,
       count:(panels.at(-1)?.items || model().items || []).length, canLoadMore:!!activeLoader() && !activeLoader().done }; } };
   render(true);
   // Re-render the current route once so its first batch uses our explicit loader.

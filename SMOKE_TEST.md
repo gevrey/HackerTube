@@ -156,3 +156,15 @@ Remote events were submitted through serial-pinned ADB on the physical device. H
 - Testing found that `cc_load_policy=0` alone kept captions enabled by YouTube's preference. The implementation also clears the active track after the caption API becomes available. The live player advertises this option, but it is not a documented stable API; the code checks its availability and the README records the maintenance limitation.
 - The fullscreen host still contains zero app buttons. Remote Back returns to browsing. The Streamer was left on Settings with Captions Off and the toggle focused.
 - Offline build, Android lint, JavaScript syntax validation, and all four focused tests passed. Installed APK matched SHA-256 `e9c637a178792e271f1a56b0e0bd7a16bcb05bdc44b2303d0730e7b49f6ea88f`.
+
+
+# Native playback option, version 0.3.12, 2026-11-07
+
+- Christophe confirmed that the Salman Khan comparison video was synchronized in native YouTube. The built-in player's audio remained behind the picture, including during a temporary Web Audio experiment. That experiment was discarded and is not part of this build.
+- The default Player setting is now YouTube, with Built-in available as an explicit alternative. This avoids the affected WebView playback path; it does not claim to repair WebView's audio clock.
+- On the physical Streamer, remote OK switched both player choices, persisted the selection, and retained focus. Both YouTube and Built-in survived cold app restarts. Scrolling Off, Small text, and the saved caption preference were preserved.
+- Six Settings cards fit on one page with zero root scroll. Content scroll height equalled the 410-pixel client height. The caption setting is explicitly labelled Built-in captions and explains that native YouTube has its own caption settings.
+- With Built-in selected, Play fullscreen opened `PlayerActivity`, played the requested video, and remote Back returned to the watch page. With YouTube selected, remote OK on Play in YouTube opened `com.google.android.youtube.tv`; its active media session identified the correct Salman Khan video and reported PLAYING.
+- Native YouTube owns its controls, caption settings, and Back navigation. Back opened YouTube's own screens. Reopening HackerTube restored the same watch page with Play focused. Direct one-press Back to browsing remains specific to the built-in player.
+- The no-YouTube installation fallback is implemented but was not exercised by removing or disabling the installed app.
+- Offline build, Android lint, JavaScript syntax checking, and all four focused tests passed. Installed APK matched SHA-256 `36cfcd5475cd0b22adbce692f448263ddc8a952489e65cad51c40346db204a88`. The Streamer was left on Settings with YouTube selected.
