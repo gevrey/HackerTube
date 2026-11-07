@@ -191,3 +191,14 @@ Remote events were submitted through serial-pinned ADB on the physical device. H
 - The seven Settings cards use two fixed pages with Scrolling Off. Both pages retained a 540-pixel root, zero root scroll, and a content pane whose scroll height matched its 410-pixel client height. A screenshot verified the On setting and single orange focus border.
 - Offline build, Android lint, JavaScript syntax checking, four navigation tests, and eight Java session-ownership assertions passed. The installed APK matched SHA-256 `d5c11ebebe57b05423c3d08f0f97bdf9cdfbfc0023d568cb7e1242d9926e9077`.
 - The Streamer was left on Settings with YouTube Back On, YouTube selected as player, Scrolling Off, Small text, and Built-in captions Off. Temporary UI dumps and the WebView debugging forward were removed.
+
+
+# Preferred and alternate player tiles, version 0.3.15, 2026-11-07
+
+- On the physical Streamer, the watch page showed the main poster, Details, and Like across the top row; the alternate player, Watch later, and Dislike across the bottom row. All six tiles fit on Page 1 / 1 without scrolling.
+- With YouTube selected in Settings, the main tile opened native YouTube and its media session identified the requested video, The Egg - A Short Story. The bottom-left Play in HackerTube tile opened `PlayerActivity` with the same video.
+- With Built-in selected, the poster label became Play in HackerTube and opened `PlayerActivity`. The bottom-left label became Play in YouTube and opened native YouTube with the Back helper armed.
+- Returning from either alternate player preserved focus on its tile. The main tile's label continued to reflect the saved preference, confirming that alternate playback did not change it. YouTube was restored as the selected player after testing.
+- Screenshots verified the tile order and labels for both settings. Like, Dislike, and Watch later retained their original source actions; their values were not changed during testing.
+- Offline build, Android lint, JavaScript syntax checking, four navigation tests, and the Java Back-session checks passed. Installed APK matched SHA-256 `ddbc30ebd72c30305863c17a0411143e59c21168477a7ad57749e37f3865f872`.
+- The existing isolated Mac ADB server was reused. No Mac server, tunnel, connector, or schedule was added or reconfigured. The single-use Gradle process exited after the build.

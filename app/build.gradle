@@ -8,8 +8,8 @@ android {
         applicationId 'ch.cri.hackertube'
         minSdk 28
         targetSdk 36
-        versionCode 17
-        versionName '0.3.14'
+        versionCode 18
+        versionName '0.3.15'
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17

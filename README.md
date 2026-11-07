@@ -14,7 +14,7 @@ The HackerTube logo sits above the left menu and opens Home when selected. The m
 | Details, filters, topics | With scrolling off, use Previous and Next. With scrolling on, use Up/Down to read text or move through lists. Back closes the panel. |
 | Settings | Select Player to switch between YouTube, the default, and Built-in. Scrolling and Built-in captions toggle On or Off. Video text size cycles Small, Medium, and Large. All choices survive app restarts. Built-in captions default to Off; native YouTube uses its own caption settings. |
 | Search | Select Search near the bottom of the left menu. The hidden field appears and opens the TV keyboard. Submit with the keyboard or Go; Back hides the field. |
-| Watch page | Select the poster or Play in YouTube to start with the default player. With Built-in selected, the action is Play fullscreen. Open in YouTube is always available. |
+| Watch page | The top-left poster plays in the player selected in Settings, labelled Play in YouTube or Play in HackerTube. The bottom-left tile plays this video in the other player without changing the saved preference. Dislike is bottom-right, with Watch later between the two. |
 | Native YouTube player | Uses YouTube's remote controls, overlays, and captions. Enable Settings, YouTube Back to return directly to the same HackerTube page with Back. Without this optional helper, Back follows YouTube's normal navigation. |
 | Built-in player | OK toggles play/pause, Left/Right seek 10 seconds, and Back returns directly to the watch page. While paused, a top-right overlay shows elapsed time, total length, and a progress bar. It updates after seeking and disappears on resume. There are no app buttons or instructions. |
 
@@ -40,7 +40,7 @@ This interrupts the current TV app. Use it when the Streamer is available for te
 
 The script uses the isolated ADB server on port 5038 and verifies the exact `Google TV Streamer` model before installation. Override `STREAMER_ENDPOINT` if its address changes. The default is `192.168.1.50:5555`.
 
-Package: `ch.cri.hackertube`, version `0.3.14` (code 17). This is a development APK signed with the local Android debug key, not a Play Store release. WebView debugging is available only in debug builds.
+Package: `ch.cri.hackertube`, version `0.3.15` (code 18). This is a development APK signed with the local Android debug key, not a Play Store release. WebView debugging is available only in debug builds.
 
 ## Optional YouTube Back helper
 

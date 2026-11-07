@@ -236,14 +236,14 @@
     } else node.click();
     schedule();
   }
-  function media(command) {
+  function media(command, player = playbackPlayer) {
     if (command !== 'play' && command !== 'toggle') return;
     const vid = location.pathname.split('/')[2];
-    // Pass only the selected player and caption flag to the native host, which validates
-    // the video ID and explicitly targets the installed YouTube TV package.
+    // The main tile and remote playback use the saved preference. The alternate tile
+    // overrides it for this launch only, retaining the saved player and caption setting.
     if (/^[A-Za-z0-9_-]{11}$/.test(vid || '')) {
       location.href = '/__tv_play?v=' + encodeURIComponent(vid) + '&captions=' + (captionsEnabled ? '1' : '0')
-        + '&player=' + playbackPlayer;
+        + '&player=' + player;
     }
   }
   function linkItem(node, prefix = '') {
@@ -282,18 +282,28 @@
     const watch = source.querySelector('.watch');
     if (watch) {
       const title = text(watch.querySelector('h1'));
-      const items = [
-        { title:playbackPlayer === 'youtube' ? 'Play in YouTube' : 'Play fullscreen', subtitle:title, image:watch.querySelector('#poster img')?.src,
-          key:'play', action:() => media('play') },
-        { title:'Read details and comments', subtitle:'Full title, description, and discussion', key:'details', action:readSource }
-      ];
-      for (const id of ['like','dislike','save-later']) {
+      const alternatePlayer = playbackPlayer === 'youtube' ? 'built-in' : 'youtube';
+      const watchAction = id => {
         const node = source.querySelector('#' + id);
-        if (node) items.push({ title:(node.getAttribute('aria-label') || text(node)) + (node.classList.contains('on') ? ' (selected)' : ''),
-          key:id, action:() => sourceAction(node) });
-      }
-      const youtube = watch.querySelector('a[href^="https://www.youtube.com/watch"]');
-      if (youtube) items.push({ ...linkItem(youtube), title:'Open in YouTube' });
+        return node ? {
+          title:(node.getAttribute('aria-label') || text(node)) + (node.classList.contains('on') ? ' (selected)' : ''),
+          key:id, action:() => sourceAction(node)
+        } : null;
+      };
+      // Keep both launch choices in the left column. The alternate player replaces the
+      // old Dislike position, while Dislike moves to the last tile. A stable key keeps
+      // focus on the launch tile when returning from either player.
+      const items = [
+        { title:playbackPlayer === 'youtube' ? 'Play in YouTube' : 'Play in HackerTube', subtitle:title, image:watch.querySelector('#poster img')?.src,
+          key:'play', action:() => media('play') },
+        { title:'Read details and comments', subtitle:'Full title, description, and discussion', key:'details', action:readSource },
+        watchAction('like'),
+        { title:alternatePlayer === 'youtube' ? 'Play in YouTube' : 'Play in HackerTube',
+          subtitle:'Use the alternate player for this video', key:'play-alternate',
+          action:() => media('play', alternatePlayer) },
+        watchAction('save-later'),
+        watchAction('dislike')
+      ].filter(Boolean);
       return { title, items, tools:[['Related', () => showPanel({ title:'Related videos', items:[...source.querySelectorAll('.next')].map(n => linkItem(n)) })],
         ['Links', () => showPanel({ title:'Discussion and topic links', items:[...source.querySelectorAll('.desc a,.comments a')].map(n => linkItem(n)) })]] };
     }
