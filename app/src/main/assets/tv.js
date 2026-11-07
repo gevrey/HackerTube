@@ -4,9 +4,17 @@
   const source = document.querySelector('main');
   const pageSize = 6;
   const scrollSettingKey = 'cri.hackertube.scrollEnabled';
+  const textSizeKey = 'cri.hackertube.textSize';
+  const textSizes = ['small', 'medium', 'large'];
   // Default to the existing paged layout. Storage failures must not prevent app startup.
   let scrollEnabled = false;
   try { scrollEnabled = localStorage.getItem(scrollSettingKey) === 'true'; } catch (_) {}
+  // Small is two CSS pixels below the previous card and reader sizes. Ignore invalid saved values.
+  let textSize = 'small';
+  try {
+    const saved = localStorage.getItem(textSizeKey);
+    if (textSizes.includes(saved)) textSize = saved;
+  } catch (_) {}
   const savedPages = new Map();
   let path = location.pathname + location.search, page = 0, panels = [];
   let scheduled = false, editing = false, searchOpen = false, pendingFilters = false;
@@ -22,7 +30,10 @@
     body > :not(#tv-shell):not(script):not(style) { position:fixed!important; top:100000px!important;
       left:0!important; width:960px!important; visibility:hidden!important; pointer-events:none!important; }
     #tv-shell { position:fixed; inset:18px 26px; display:grid; grid-template-rows:minmax(0,1fr) 18px;
-      gap:12px; color:#f4f6fb; background:#10141c; font:18px/1.3 sans-serif; }
+      gap:12px; color:#f4f6fb; background:#10141c; font:18px/1.3 sans-serif;
+      --tv-card-title-size:14px; --tv-card-subtitle-size:11px; --tv-text-size:17px; }
+    #tv-shell[data-text-size=medium] { --tv-card-title-size:16px; --tv-card-subtitle-size:13px; --tv-text-size:19px; }
+    #tv-shell[data-text-size=large] { --tv-card-title-size:18px; --tv-card-subtitle-size:15px; --tv-text-size:21px; }
     body { background:#10141c!important; }
     #tv-shell * { box-sizing:border-box; min-width:0; min-height:0; }
     #tv-shell button,#tv-shell input { font:inherit; color:inherit; }
@@ -30,8 +41,7 @@
       padding:7px 13px; cursor:pointer; overflow:hidden; }
     #tv-shell button:disabled,#tv-shell button[aria-disabled=true] { opacity:.35; }
     #tv-shell button[aria-disabled=true].tv-focus { opacity:1; color:#9aaec5; }
-    #tv-shell .tv-focus { border-color:#ffad6c!important; outline:2px solid #ffad6c!important;
-      outline-offset:1px; background-color:#34465e; }
+    #tv-shell .tv-focus { border-color:#ffad6c!important; outline:none!important; background-color:#34465e; }
     #tv-main { display:grid; grid-template-columns:150px minmax(0,1fr); gap:22px; overflow:hidden; }
     #tv-nav { display:grid; grid-template-rows:repeat(11,minmax(0,1fr)); gap:5px; padding:3px; }
     #tv-nav button { text-align:left; padding:4px 10px; font-size:16px; }
@@ -49,18 +59,19 @@
       grid-template-rows:repeat(2,minmax(0,1fr)); gap:14px; padding:3px; }
     #tv-shell .tv-card { display:grid; grid-template-rows:minmax(0,1fr) auto auto; gap:4px; padding:7px; text-align:left; }
     .tv-card img { width:100%; height:100%; object-fit:cover; border-radius:4px; }
-    .tv-card strong { font-size:16px; font-weight:600; line-height:20px; display:-webkit-box;
+    .tv-card strong { font-size:var(--tv-card-title-size); font-weight:600;
+      line-height:calc(var(--tv-card-title-size) + 4px); display:-webkit-box;
       -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; overflow-wrap:anywhere; }
-    .tv-card small { font-size:13px; color:#b8c5d5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .tv-card small { font-size:var(--tv-card-subtitle-size); color:#b8c5d5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     #tv-shell .tv-card.tv-text { display:flex; flex-direction:column; justify-content:center; gap:8px; }
-    .tv-card.tv-text strong { font-size:19px; line-height:24px; -webkit-line-clamp:3; }
+    .tv-card.tv-text strong { font-size:var(--tv-text-size); line-height:calc(var(--tv-text-size) + 5px); -webkit-line-clamp:3; }
     .tv-card.tv-text small { white-space:normal; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
     #tv-pager { display:flex; align-items:center; justify-content:center; gap:14px; }
     #tv-pager button { height:36px; font-size:16px; }
     #tv-page-label { font-size:16px; color:#b8c5d5; min-width:100px; text-align:center; }
     #tv-footer { color:#9aaec5; font-size:13px; text-align:center; }
-    #tv-reading { height:100%; padding:12px 16px; border-radius:8px; background:#18202c;
-      overflow:hidden; white-space:pre-wrap; overflow-wrap:anywhere; font-size:19px; line-height:1.5; }
+    #tv-reading { height:100%; padding:12px 16px; border:2px solid transparent; border-radius:8px; background:#18202c;
+      overflow:hidden; white-space:pre-wrap; overflow-wrap:anywhere; font-size:var(--tv-text-size); line-height:1.5; }
     #tv-shell.tv-scroll #tv-body { overflow-y:auto; overscroll-behavior:contain; scrollbar-color:#526176 #18202c; }
     #tv-shell.tv-scroll .tv-cards { height:auto; grid-template-rows:none; grid-auto-rows:200px; }
     #tv-shell.tv-scroll #tv-reading { height:auto; min-height:100%; overflow:visible; }
@@ -69,13 +80,15 @@
       #tv-content { gap:6px; } #tv-title { height:24px; } #tv-tools { height:30px; }
       #tv-search { height:38px; } #tv-pager { height:32px; }
       #tv-nav { gap:3px; } #tv-nav button { font-size:14px; padding:3px 8px; }
-      #tv-reading { font-size:16px; line-height:1.35; } .tv-cards { gap:9px; }
-      .tv-card strong { font-size:14px; line-height:17px; } .tv-card small { font-size:11px; }
+      #tv-reading { font-size:calc(var(--tv-text-size) - 3px); line-height:1.35; } .tv-cards { gap:9px; }
+      .tv-card strong { font-size:calc(var(--tv-card-title-size) - 2px); line-height:calc(var(--tv-card-title-size) + 1px); }
+      .tv-card small { font-size:calc(var(--tv-card-subtitle-size) - 2px); }
       #tv-pager button { height:30px; } }
   `;
   document.head.appendChild(style);
   const shell = document.createElement('div');
   shell.id = 'tv-shell';
+  shell.dataset.textSize = textSize;
   shell.innerHTML = `<div id="tv-main"><nav id="tv-nav" aria-label="Sections"></nav><section id="tv-content">
       <form id="tv-search"><input id="tv-query" type="search" aria-label="Search videos" placeholder="Search videos" autocomplete="off" data-key="query">
         <button data-key="search-submit">Go</button></form>
@@ -173,6 +186,14 @@
     render();
     focus(shell.querySelector('[data-key="item-scrolling"]'));
   }
+  function cycleTextSize() {
+    textSize = textSizes[(textSizes.indexOf(textSize) + 1) % textSizes.length];
+    try { localStorage.setItem(textSizeKey, textSize); } catch (_) {}
+    // CSS variables update every card and text page together. Re-render the Settings label.
+    shell.dataset.textSize = textSize;
+    render();
+    focus(shell.querySelector('[data-key="item-text-size"]'));
+  }
   function sourceAction(node) {
     if (!node?.isConnected) return;
     if (node.matches('a')) {
@@ -240,6 +261,8 @@
         title:'Scrolling: ' + (scrollEnabled ? 'On' : 'Off'),
         subtitle:scrollEnabled ? 'Continuous lists and text. Select for pages.' : 'Six cards per page. Select to enable scrolling.',
         key:'scrolling', checked:scrollEnabled, action:toggleScrolling
+      }, { title:'Video text size: ' + textSize[0].toUpperCase() + textSize.slice(1),
+        subtitle:'Select to cycle Small, Medium, Large', key:'text-size', action:cycleTextSize
       }, { title:'Video frames: ' + (checkbox?.checked ? 'On' : 'Off'),
         subtitle:'Select to change thumbnail style', key:'frames', action:() => { checkbox?.click(); render(); } },
         { title:'Read setting description', key:'setting-info', action:readSource }], tools:[] };

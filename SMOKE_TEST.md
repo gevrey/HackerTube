@@ -79,3 +79,13 @@ Remote events were submitted through serial-pinned ADB on the physical device. H
 - About opened its page. Filters opened 26 options from Settings, returning through Home when necessary.
 - With scrolling Off, the pane and content both measured 420 pixels, six cards were visible, and root and pane scroll offsets were zero. The user's Scrolling On preference was restored after testing.
 - Final offline build, lint, JavaScript syntax check, and four focused tests passed. The installed APK matched the local SHA-256: `6b2c6a4b015e3a47217657c9451c115edeed640c4cacbad244c64038f1f2a12c`.
+
+
+# Single focus border and text sizes, version 0.3.3, 2026-11-07
+
+- The physical Streamer showed one 2-pixel orange border on the selected video card, with no CSS outline.
+- The new Small default rendered video titles at 14 CSS pixels and subtitles at 11, each two pixels below the previous version. The long-text reader rendered at 17 pixels.
+- Remote OK on Settings, Video text size cycled Small, Medium, Large while retaining focus. Medium matched the former sizes, and Large rendered video titles at 18 pixels and subtitles at 15.
+- Large survived a cold app restart. The test restored Small and the user's Scrolling On preference.
+- With scrolling temporarily Off, a six-page details view fitted its 330-pixel reader exactly, with zero root scroll and no clipped page content.
+- Offline build, lint, JavaScript syntax check, and all four focused tests passed. Installed APK SHA-256 matched the build: `3eb7215b480ab217c4c08456cf91b1a9b9b90318c143784f353519914ea4ab43`.
