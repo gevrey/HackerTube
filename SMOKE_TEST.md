@@ -111,3 +111,11 @@ Remote events were submitted through serial-pinned ADB on the physical device. H
 - The physical Streamer showed About links in the order `@karpathy`, `@gevrey`, `@cri`, with matching `https://x.com/` profile destinations.
 - Repeated renders did not duplicate the added handles. The About reader included `@karpathy, @gevrey and @cri`, and root scrolling remained zero.
 - Offline build, lint, JavaScript syntax check, and four focused tests passed. Installed APK matched SHA-256 `038f578b0c009d2326049e7745c4a0833957d1857d7a13ce06a2e3f38b27afff`.
+
+
+# Credits and footer cleanup, version 0.3.7, 2026-11-07
+
+- About link cards showed only `@karpathy` and `@cri`. The reader contained `@karpathy and @cri` and no `@gevrey`.
+- The bottom instructions element and its reserved layout row were removed. Home's video pane measured 450 CSS pixels, up from 420, with a 540-pixel root and zero root scroll.
+- The final Home layout was visually checked on the physical Streamer. Offline build, lint, syntax check, and four focused tests passed.
+- Installed APK matched SHA-256 `76767a9282047f6617383021fff63d71ac014b27d17ec837ab0135ed657fb9ca`.

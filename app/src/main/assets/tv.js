@@ -29,8 +29,8 @@
     html,body { width:100%; height:100%; margin:0!important; overflow:hidden!important; overscroll-behavior:none; }
     body > :not(#tv-shell):not(script):not(style) { position:fixed!important; top:100000px!important;
       left:0!important; width:960px!important; visibility:hidden!important; pointer-events:none!important; }
-    #tv-shell { position:fixed; inset:18px 26px; display:grid; grid-template-rows:minmax(0,1fr) 18px;
-      gap:12px; color:#f4f6fb; background:#10141c; font:18px/1.3 sans-serif;
+    #tv-shell { position:fixed; inset:18px 26px; display:grid; grid-template-rows:minmax(0,1fr);
+      color:#f4f6fb; background:#10141c; font:18px/1.3 sans-serif;
       --tv-card-title-size:14px; --tv-card-subtitle-size:11px; --tv-text-size:17px; }
     #tv-shell[data-text-size=medium] { --tv-card-title-size:16px; --tv-card-subtitle-size:13px; --tv-text-size:19px; }
     #tv-shell[data-text-size=large] { --tv-card-title-size:18px; --tv-card-subtitle-size:15px; --tv-text-size:21px; }
@@ -72,14 +72,13 @@
     #tv-pager { display:flex; align-items:center; justify-content:center; gap:14px; }
     #tv-pager button { height:36px; font-size:16px; }
     #tv-page-label { font-size:16px; color:#b8c5d5; min-width:100px; text-align:center; }
-    #tv-footer { color:#9aaec5; font-size:13px; text-align:center; }
     #tv-reading { height:100%; padding:12px 16px; border:2px solid transparent; border-radius:8px; background:#18202c;
       overflow:hidden; white-space:pre-wrap; overflow-wrap:anywhere; font-size:var(--tv-text-size); line-height:1.5; }
     #tv-shell.tv-scroll #tv-body { overflow-y:auto; overscroll-behavior:contain; scrollbar-color:#526176 #18202c; }
     #tv-shell.tv-scroll .tv-cards { height:auto; grid-template-rows:none; grid-auto-rows:200px; }
     #tv-shell.tv-scroll #tv-reading { height:auto; min-height:100%; overflow:visible; }
     #tv-empty { display:flex; height:100%; align-items:center; justify-content:center; text-align:center; padding:20px; }
-    @media(max-height:440px) { #tv-shell { inset:10px 18px; gap:8px; grid-template-rows:minmax(0,1fr) 16px; }
+    @media(max-height:440px) { #tv-shell { inset:10px 18px; }
       #tv-content { gap:6px; } #tv-title { height:24px; } #tv-tools { height:30px; }
       #tv-search { height:38px; } #tv-pager { height:32px; }
       #tv-sidebar { grid-template-rows:28px minmax(0,1fr); gap:4px; }
@@ -102,8 +101,7 @@
         <button data-key="search-submit">Go</button></form>
       <h1 id="tv-title"></h1><div id="tv-tools"></div><div id="tv-body"></div>
       <div id="tv-pager"><button id="tv-prev" data-key="previous">Previous</button><span id="tv-page-label" aria-live="polite"></span>
-      <button id="tv-next" data-key="next">Next</button></div></section></div>
-    <footer id="tv-footer">Arrows move · OK selects · Previous / Next changes page · Back returns</footer>`;
+      <button id="tv-next" data-key="next">Next</button></div></section></div>`;
   document.body.appendChild(shell);
   const q = selector => shell.querySelector(selector);
   const text = node => node?.textContent.trim().replace(/\s+/g, ' ') || '';
@@ -247,7 +245,7 @@
       link.target = '_blank'; link.rel = 'noopener'; link.textContent = '@' + handle;
       return link;
     };
-    original.after(', ', profile('gevrey'), ' and ', profile('cri'));
+    original.after(' and ', profile('cri'));
     original.dataset.tvCreditsAdded = 'true';
   }
   function model() {
@@ -324,9 +322,6 @@
     }
     const previousScroll = resetFocus ? 0 : q('#tv-body').scrollTop;
     shell.classList.toggle('tv-scroll', scrollEnabled);
-    q('#tv-footer').textContent = scrollEnabled
-      ? 'Arrows move and scroll · OK selects · Back returns'
-      : 'Arrows move · OK selects · Previous / Next changes page · Back returns';
     const active = document.activeElement;
     const key = active?.dataset.key;
     const persistentFocus = active && !q('#tv-content').contains(active) && shell.contains(active);
